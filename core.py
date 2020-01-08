@@ -18,11 +18,15 @@ class MultiValuedDammy(BaseDammy):
     def __init__(self, *args):
         self._values = args
 
+    def generate(self):
+        return [value.generate() for value in self._values]
+
 class DammyEntity(BaseDammy):
     def __init__(self):
         self.attrs = [i for i, v in self.__class__.__dict__.items() if i[:1] != '_' and not callable(v)]
 
     def generate(self):
+        # TODO store values for each generated attribute and generate the values depending on them with the stored ones
         return dict((attr, getattr(self, attr).generate()) for attr in self.attrs)
 
     def __iter__(self):

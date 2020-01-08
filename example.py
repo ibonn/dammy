@@ -15,6 +15,6 @@ class Car(DammyEntity):
     model = CarModel(car_brand=brand)
     owner = Person()
 
-# Generate 100 random people
-for i in range(0, 100):
+# Generate 100 random cars
+for i in range(0, 99):
     print(Car())
