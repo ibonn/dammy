@@ -12,7 +12,7 @@ class AutoIncrement(BaseDammy):
 
     def __init__(self, start=1, increment=1):
         if AutoIncrement._last_generated is None:
-            AutoIncrement._last_generated = start
+            AutoIncrement._last_generated = start - 1
         self._increment = increment
 
     def generate(self):
