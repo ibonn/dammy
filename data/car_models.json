@@ -1,0 +1,113 @@
+{
+    "Audi": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7",
+        "A8",
+        "Q2",
+        "Q3",
+        "Q5",
+        "Q7",
+        "Q8",
+        "R8",
+        "TT"
+    ],
+    "BMW": [
+        "F06 6 Series",
+        "F10 5 Series",
+        "F15 X5",
+        "G06 X6",
+        "G20 3 Series"
+    ],
+    "Bugatti": [
+        "EB110",
+        "Veyron"
+    ],
+    "Chevrolet": [
+        "Bolt",
+        "Camaro",
+        "Corvette",
+        "Impala",
+        "Malibu",
+        "Sonic",
+        "Spark"
+    ],
+    "Citroën": [
+        "AX",
+        "BX",
+        "C2",
+        "C3",
+        "C5",
+        "C6",
+        "C8",
+        "Saxo",
+        "Xsara"
+    ],
+    "Dacia": [
+        "Logan",
+        "Sandero"
+    ],
+    "Ferrari": [
+        "208",
+        "308",
+        "Dino",
+        "Testarossa"
+    ],
+    "Fiat": [
+        "TODO"
+    ],
+    "Ford": [
+        "Fiesta",
+        "Focus",
+        "Ka",
+        "Mustang"
+    ],
+    "Kia": [
+        "TODO"
+    ],
+    "Lexus": [
+        "TODO"
+    ],
+    "Mazda": [
+        "TODO"
+    ],
+    "Mercedes-Benz": [
+        "TODO"
+    ],
+    "Opel": [
+        "TODO"
+    ],
+    "Peugeot": [
+        "TODO"
+    ],
+    "Porsche": [
+        "TODO"
+    ],
+    "Renault": [
+        "TODO"
+    ],
+    "SEAT": [
+        "Alhambra",
+        "Arona",
+        "Ateca",
+        "Ibiza",
+        "León",
+        "Tarraco"
+    ],
+    "Suzuki": [
+        "TODO"
+    ],
+    "Toyota": [
+        "TODO"
+    ],
+    "Volkswagen": [
+        "TODO"
+    ],
+    "Volvo": [
+        "TODO"
+    ]
+}
