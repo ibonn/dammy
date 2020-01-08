@@ -1,7 +1,23 @@
 import json
 import random
+import time
+import datetime
 
 from core import BaseDammy
+
+class AutoIncrement(BaseDammy):
+    """
+    Represents an automatically incrementing field. By default starts by 1 and increments by 1
+    """
+
+    def __init__(self, start=1, increment=1):
+        if AutoIncrement._last_generated is None:
+            AutoIncrement._last_generated = start
+        self._increment = increment
+
+    def generate(self):
+        AutoIncrement._last_generated += self._increment
+        return AutoIncrement._last_generated
 
 class RandomInteger(BaseDammy):
     """
@@ -65,19 +81,34 @@ class RandomString(BaseDammy):
         return ''.join(random.choice(self._symbols) for i in range(self._length))
 
 # TODO
-class RandomDate(BaseDammy):
+class RandomDateTime(BaseDammy):
     """
-    Generates a random date in the given interval using the given format.
-    The default start date is datetime.MINYEAR
-    The default end date is datetime.MAXYEAR
+    Generates a random datetime in the given interval using the given format.
+    The default start date is datetime.MINYEAR (january 1st)
+    The default end date is datetime.MAXYEAR (december 31st)
     If format is not supplied, a datetime object will be generated
     """
-    def __init__(self, start=None, end=None, format=None):
-        self._start = start
-        self._end = end
+    def __init__(self, start=None, end=None, date_format=None):
+        if start is None:
+            self._start = datetime.datetime(year=datetime.MINYEAR, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        else:
+            self._start = start
+
+        if end is None:
+            self._end = datetime.datetime(year=datetime.MAXYEAR, month=12, day=31, hour=23, minute=59, second=59, microsecond=9999999)
+        else:
+            self._end = end
+
+        self._format = date_format
 
     def generate(self):
-        return ''
+        s = time.mktime(self._start.timetuple())
+        e = time.mktime(self._end.timetuple())
+        t = random.uniform(s, e)
+        if self._format is None:
+            return datetime.datetime.fromtimestamp(t)
+        else:
+            return time.strftime(self._format, time.localtime(t))
 
 class CarBrand(BaseDammy):
     """
