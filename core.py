@@ -75,8 +75,23 @@ class DatasetGenerator:
             self._generate_entity(c)
 
 
-    def get_sql(self, create_tables=True):
-        pass
+    def get_sql(self, create_tables=True, save_to=None):
+        lines = []
+        table_columns = dict((n, c().attrs) for n, c in self._name_class_map.items())
+        if create_tables:
+            raise NotImplementedError("Column data types and constraints missing")
+            for name, columns in table_columns.items():
+                columns_with_specs = ['\t{}'.format(column) for column in columns]
+                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(name, ',\n'.join(columns_with_specs)))
+
+        for table_name, rows in self.data.items():
+            tuples = [', '.join(['"{}"'.format(value) if isinstance(value, str) else str(value) for value in row.values()]) for row in rows]
+            lines.append('INSERT INTO {} ({}) VALUES \n{};'.format(table_name, ', '.join(table_columns[table_name]), ',\n'.join(['\t({})'.format(tp) for tp in tuples])))
+
+        if save_to is None:
+            return '\n'.join(lines)
+        else:
+            pass
 
     def __str__(self):
         return str(self.data)

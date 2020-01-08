@@ -22,4 +22,4 @@ for i in range(0, 10):
 
 # Generate a dataset with 3 people and 7 cars
 dataset = DatasetGenerator((Car, 7), (Person, 3))
-print(dataset)
+print(dataset.get_sql())
