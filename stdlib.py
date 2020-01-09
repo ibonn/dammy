@@ -3,21 +3,7 @@ import random
 import time
 import datetime
 
-from core import BaseDammy
-
-class AutoIncrement(BaseDammy):
-    """
-    Represents an automatically incrementing field. By default starts by 1 and increments by 1
-    """
-
-    def __init__(self, start=1, increment=1):
-        if AutoIncrement._last_generated is None:
-            AutoIncrement._last_generated = start - 1
-        self._increment = increment
-
-    def generate(self):
-        AutoIncrement._last_generated += self._increment
-        return AutoIncrement._last_generated
+from core import BaseDammy, contains_reference, get_reference
 
 class RandomInteger(BaseDammy):
     """
@@ -25,11 +11,15 @@ class RandomInteger(BaseDammy):
     """
 
     def __init__(self, lb, ub):
+        super(RandomInteger, self).__init__('INTEGER')
         self._lb = lb
         self._ub = ub
 
-    def generate(self):
-        return random.randint(self._lb, self._ub)
+    """
+    Generates a new random integer
+    """
+    def generate(self, dataset=None):
+        return self._generate(random.randint(self._lb, self._ub))
 
 class RandomName(BaseDammy):
     """
@@ -40,6 +30,7 @@ class RandomName(BaseDammy):
     _names = None
 
     def __init__(self, language_code, gender=None):
+        super(RandomName, self).__init__('VARCHAR(15)')
         self._language_code = language_code
         self._gender = gender
 
@@ -47,11 +38,14 @@ class RandomName(BaseDammy):
             with open('data/names.json') as f:
                 RandomName._names = json.load(f)
 
-    def generate(self):
+    """
+    Generates a new random name
+    """
+    def generate(self, dataset=None):
         gender = self._gender
         if gender is None:
             gender = random.choice(['male', 'female'])
-        return random.choice(RandomName._names[self._language_code][gender])
+        return self._generate(random.choice(RandomName._names[self._language_code][gender]))
 
 # TODO
 class CityName(BaseDammy):
@@ -62,10 +56,14 @@ class CityName(BaseDammy):
     """
 
     def __init__(self, country_code=None, subdivision_code=None):
+        super(CityName, self).__init__('VARCHAR(50)')
         self._country_code = country_code
 
-    def generate(self):
-        return ''
+    """
+    Generates a new city name
+    """
+    def generate(self, dataset=None):
+        return self._generate('')
 
 class RandomString(BaseDammy):
     """
@@ -74,11 +72,15 @@ class RandomString(BaseDammy):
     """
 
     def __init__(self, length, symbols="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"):
+        super(RandomString, self).__init__('VARCHAR({})'.format(length))
         self._length = length
         self._symbols = list(symbols)
 
-    def generate(self):
-        return ''.join(random.choice(self._symbols) for i in range(self._length))
+    """
+    Generates a new random string
+    """
+    def generate(self, dataset=None):
+        return self._generate(''.join(random.choice(self._symbols) for i in range(self._length)))
 
 # TODO
 class RandomDateTime(BaseDammy):
@@ -88,7 +90,9 @@ class RandomDateTime(BaseDammy):
     The default end date is datetime.MAXYEAR (december 31st)
     If format is not supplied, a datetime object will be generated
     """
+
     def __init__(self, start=None, end=None, date_format=None):
+        super(RandomDateTime, self).__init__('DATETIME')
         if start is None:
             self._start = datetime.datetime(year=datetime.MINYEAR, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         else:
@@ -101,14 +105,23 @@ class RandomDateTime(BaseDammy):
 
         self._format = date_format
 
-    def generate(self):
+    def __sub__(self, other):
+        """
+        datetime substraction
+        """
+        return NotImplemented
+
+    def generate(self, dataset=None):
+        """
+        Generates a new random datetime
+        """
         s = time.mktime(self._start.timetuple())
         e = time.mktime(self._end.timetuple())
         t = random.uniform(s, e)
         if self._format is None:
-            return datetime.datetime.fromtimestamp(t)
+            return self._generate(datetime.datetime.fromtimestamp(t))
         else:
-            return time.strftime(self._format, time.localtime(t))
+            return self._generate(time.strftime(self._format, time.localtime(t)))
 
 class CarBrand(BaseDammy):
     """
@@ -117,13 +130,16 @@ class CarBrand(BaseDammy):
     _brands = None
 
     def __init__(self):
+        super(CarBrand, self).__init__('VARCHAR(15)')
         if CarBrand._brands is None:
             with open('data/car_models.json') as f:
                 CarBrand._brands = list(json.load(f).keys())
 
-    def generate(self):
-        CarBrand._last_generated = random.choice(CarBrand._brands)
-        return CarBrand._last_generated
+    """
+    Generates a new car brand
+    """
+    def generate(self, dataset=None):
+        return self._generate(random.choice(CarBrand._brands))
 
 class CarModel(BaseDammy):
     """
@@ -133,19 +149,27 @@ class CarModel(BaseDammy):
     _models = None
 
     def __init__(self, car_brand=None):
+        super(CarModel, self).__init__('VARCHAR(25)')
         self._car_brand = car_brand
 
         if CarModel._models is None:
             with open('data/car_models.json') as f:
                 CarModel._models = json.load(f)
 
-    def generate(self):
+    """
+    Generates a new car model
+    """
+    def generate(self, dataset=None):
         car_brand = self._car_brand
         if car_brand is None:
             car_brand = CarBrand().generate()
             while len(CarModel._models[car_brand]) == 0:
                 car_brand = CarBrand().generate()
+
         elif isinstance(car_brand, CarBrand):
-            car_brand = CarBrand._last_generated
-        
-        return random.choice(CarModel._models[car_brand])
+            car_brand = car_brand._last_generated
+
+        elif contains_reference(car_brand):
+            car_brand = get_reference(car_brand, dataset)
+
+        return self._generate(random.choice(CarModel._models[car_brand]))

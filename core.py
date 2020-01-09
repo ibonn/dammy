@@ -3,12 +3,29 @@ import random
 class DammyException(Exception):
     pass
 
+def contains_reference(value):
+    return '__' in value
+
+def get_reference(value, dataset):
+    parts = value.split('__')
+    if parts[0] in dataset.data:
+        values = dataset[parts[0]]
+        return random.choice(values)[parts[1]]
+    else:
+        raise DammyException('Reference to {} not found'.format(parts[0]))
+
 class BaseDammy:
 
-    _last_generated = None
+    def __init__(self, sql_equivalent):
+        self._last_generated = None
+        self._sql_equivalent = sql_equivalent
 
-    def generate(self):
+    def generate(self, dataset=None):
         raise DammyException('The generate() method must be overridden')
+
+    def _generate(self, value):
+        self._last_generated = value
+        return value
 
     def __add__(self, other):
         return MultiValuedDammy(self, other)
@@ -43,7 +60,7 @@ class DammyEntity(BaseDammy):
                     chosen = random.choice(dataset[parts[0]])
                     result[attr] = chosen[parts[1]]
             else:
-                result[attr] = attr_obj.generate()
+                result[attr] = attr_obj.generate(dataset)
 
         return result
         # return dict((attr, getattr(self, attr).generate()) for attr in self.attrs)
@@ -77,16 +94,33 @@ class DatasetGenerator:
 
     def get_sql(self, create_tables=True, save_to=None):
         lines = []
-        table_columns = dict((n, c().attrs) for n, c in self._name_class_map.items())
+        tables_columns_types = {} 
+        tables_constraints = {}
+        for n, c in self._name_class_map.items():
+            tables_constraints[n] = []
+            d = {}
+            instance = c()
+            for attr in instance.attrs:
+                o = getattr(instance, attr)
+                if isinstance(o, str):
+                    parts = o.split('__')
+                    ref = self._name_class_map[parts[0]]()
+                    d[attr] = getattr(ref, parts[1])._sql_equivalent
+                    tables_constraints[n].append('CONSTRAINT fk_{}_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(n, parts[0], attr, parts[0], parts[1]))
+                else:
+                    d[attr] = o._sql_equivalent
+            tables_columns_types[n] = d
+
         if create_tables:
-            raise NotImplementedError("Column data types and constraints missing")
-            for name, columns in table_columns.items():
-                columns_with_specs = ['\t{}'.format(column) for column in columns]
-                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(name, ',\n'.join(columns_with_specs)))
+            #raise NotImplementedError("Column data types and constraints missing")
+            for name, columns in tables_columns_types.items():
+                columns_with_specs = ['\t{} {}'.format(column, t) for column, t in columns.items()]
+                constraints = ['\t{}'.format(constraint) for constraint in tables_constraints[name]]
+                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(name, ',\n'.join(columns_with_specs + constraints)))
 
         for table_name, rows in self.data.items():
             tuples = [', '.join(['"{}"'.format(value) if isinstance(value, str) else str(value) for value in row.values()]) for row in rows]
-            lines.append('INSERT INTO {} ({}) VALUES \n{};'.format(table_name, ', '.join(table_columns[table_name]), ',\n'.join(['\t({})'.format(tp) for tp in tuples])))
+            lines.append('INSERT INTO {} ({}) VALUES \n{};'.format(table_name, ', '.join(tables_columns_types[table_name].keys()), ',\n'.join(['\t({})'.format(tp) for tp in tuples])))
 
         if save_to is None:
             return '\n'.join(lines)
