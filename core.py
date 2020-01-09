@@ -6,7 +6,7 @@ class DammyException(Exception):
 def get_reference(value, dataset):
     if value.references_table.__name__ in dataset.data:
         values = dataset[value.references_table.__name__]
-        return random.choice(values)[value.references_field]
+        return random.choice(values)[value.references_fields[0]] # TODO if more than one reference, this should change
     else:
         raise DammyException('Reference to {} not found'.format(value.references_table.__name__))
 
@@ -17,6 +17,8 @@ def infer_type(element):
         return 'VARCHAR'
     elif isinstance(element, int):
         return 'INTEGER'
+    else:
+        raise TypeError('{} is of unknown type'.format(element))
 
 class BaseDammy:
 
@@ -61,9 +63,11 @@ class DammyEntity(BaseDammy):
                             dataset._generate_entity(attr_obj.references_table.__name__)
 
                     chosen = random.choice(dataset[attr_obj.references_table.__name__])
-                    result[attr] = chosen[attr_obj.references_field]
+                    result[attr] = chosen[attr_obj.references_fields[0]]    # TODO if more than one reference is wanted this should change
+
             elif isinstance(attr_obj, BaseDammy):
                 result[attr] = attr_obj.generate(dataset)
+            
             else:
                 result[attr] = attr_obj
 
@@ -101,21 +105,31 @@ class DatasetGenerator:
         tables_columns_types = {} 
         tables_constraints = {}
         table_order = []
+
+        # Iterate throuh (class_name, class) dict
         for n, c in self._name_class_map.items():
             tables_constraints[n] = []
             d = {}
+            # Create a instance of the class and get the attributes
             instance = c()
             for attr in instance.attrs:
                 o = getattr(instance, attr)
+
+                # If the attribute is a foreign key, add reference
                 if isinstance(o, ForeignKey):
                     ref = o.references_table()
-                    d[attr] = getattr(ref, o.references_field)._sql_equivalent
+                    d[attr] = '{} {}'.format(getattr(ref, o.references_fields[0])._sql_equivalent, o._get_sql())  # TODO if more than one reference, this should change
                     if o.references_table.__name__ not in table_order:
                         table_order.append(o.references_table.__name__)
-                    # table_order.add(n)
-                    tables_constraints[n].append('CONSTRAINT fk_{}_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(n, o.references_table.__name__, attr, o.references_table.__name__, o.references_field))
+                    
+                    # tables_constraints[n].append() # IN CASE OF CONSTRAINT OBJECT
+
+
+                # If it is a Dammy object, get the equivalent type
                 elif isinstance(o, BaseDammy):
                     d[attr] = o._sql_equivalent
+                
+                # Otherwise, infer the type of the constant value
                 else:
                     d[attr] = infer_type(o)
 
@@ -127,7 +141,7 @@ class DatasetGenerator:
             for table_name in table_order:
                 columns_with_specs = ['\t{} {}'.format(column, t) for column, t in tables_columns_types[table_name].items()]
                 constraints = ['\t{}'.format(constraint) for constraint in tables_constraints[table_name]]
-                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(table_name, ',\n'.join(columns_with_specs + constraints)))
+                lines.append('CREATE TABLE IF NOT EXISTS {} (\n{}\n);'.format(table_name, ',\n'.join(columns_with_specs + constraints)))
 
         for table_name in table_order:
             tuples = [', '.join(['"{}"'.format(value) if isinstance(value, str) else str(value) for value in row.values()]) for row in self.data[table_name]]
@@ -164,30 +178,24 @@ class AutoIncrement(BaseDammy):
         return self._generate(self._last_generated + 1)
 
 class DatabaseConstraint:
-    pass    # TODO
+    def __init__(self, prefix):
+        self._prefix = prefix
 
-class Constraint(DatabaseConstraint):
-    pass    # TODO
+    def _get_constraint_name(self, prefix, *args):
+        return '_'.join(prefix + args)
 
-class Unique(DatabaseConstraint):
-    pass    # TODO
-
-class NotNull(DatabaseConstraint):
-    pass    # TODO
-
-class PrimaryKey(DatabaseConstraint):
-    pass    # TODO
+    def _get_sql(self, *args):
+        raise DammyException('The _get_sql() method must be overridden')
 
 class ForeignKey(DatabaseConstraint):
-    def __init__(self, references_table, references_field):
+    def __init__(self, references_table, *args):
+        super(ForeignKey, self).__init__('fk')
         self.references_table = references_table
-        self.references_field = references_field
+        self.references_fields = args
 
-class Check(DatabaseConstraint):
-    pass    # TODO
-
-class Default(DatabaseConstraint):
-    pass    # TODO
-
-class Index(DatabaseConstraint):
-    pass    # TODO
+    def _get_sql(self, *args):
+        if len(args) == 0:
+            # TODO raise error if len(args) != len(references_field)
+            return 'FOREIGN KEY REFERENCES {}({})'.format(self.references_table.__name__, ', '.join(self.references_fields))
+        else:
+            return 'FOREIGN KEY ({}) REFERENCES {}({})'.format(', '.join(args), self.references_table.__name__, ', '.join(self.references_fields))
