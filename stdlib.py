@@ -3,7 +3,8 @@ import random
 import time
 import datetime
 
-from core import BaseDammy, contains_reference, get_reference
+from db import ForeignKey
+from core import BaseDammy, get_reference
 
 class RandomInteger(BaseDammy):
     """
@@ -169,7 +170,7 @@ class CarModel(BaseDammy):
         elif isinstance(car_brand, CarBrand):
             car_brand = car_brand._last_generated
 
-        elif contains_reference(car_brand):
+        elif isinstance(car_brand,ForeignKey):
             car_brand = get_reference(car_brand, dataset)
 
         return self._generate(random.choice(CarModel._models[car_brand]))

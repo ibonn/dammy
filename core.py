@@ -3,16 +3,20 @@ import random
 class DammyException(Exception):
     pass
 
-def contains_reference(value):
-    return '__' in value
-
 def get_reference(value, dataset):
-    parts = value.split('__')
-    if parts[0] in dataset.data:
-        values = dataset[parts[0]]
-        return random.choice(values)[parts[1]]
+    if value.references_table.__name__ in dataset.data:
+        values = dataset[value.references_table.__name__]
+        return random.choice(values)[value.references_field]
     else:
-        raise DammyException('Reference to {} not found'.format(parts[0]))
+        raise DammyException('Reference to {} not found'.format(value.references_table.__name__))
+
+def infer_type(element):
+    if isinstance(element, bool):
+        return 'BOOLEAN'
+    elif isinstance(element, str):
+        return 'VARCHAR'
+    elif isinstance(element, int):
+        return 'INTEGER'
 
 class BaseDammy:
 
@@ -48,22 +52,22 @@ class DammyEntity(BaseDammy):
         result = {}
         for attr in self.attrs:
             attr_obj = getattr(self, attr)
-            if isinstance(attr_obj, str):
-                parts = attr_obj.split('__')
+            if isinstance(attr_obj, ForeignKey):
                 if dataset is None:
-                    raise DammyException('Reference to an entity ({}) given but no dataset containing {}s supplied'.format(parts[0], parts[0]))
+                    raise DammyException('Reference to an entity ({}) given but no dataset containing {}s supplied'.format(attr_obj.references_table.__name__, attr_obj.references_table.__name__))
                 else:
                     if isinstance(dataset, DatasetGenerator):
-                        while dataset._counters[parts[0]] != 0:
-                            dataset._generate_entity(parts[0])
+                        while dataset._counters[attr_obj.references_table.__name__] != 0:
+                            dataset._generate_entity(attr_obj.references_table.__name__)
 
-                    chosen = random.choice(dataset[parts[0]])
-                    result[attr] = chosen[parts[1]]
-            else:
+                    chosen = random.choice(dataset[attr_obj.references_table.__name__])
+                    result[attr] = chosen[attr_obj.references_field]
+            elif isinstance(attr_obj, BaseDammy):
                 result[attr] = attr_obj.generate(dataset)
+            else:
+                result[attr] = attr_obj
 
         return result
-        # return dict((attr, getattr(self, attr).generate()) for attr in self.attrs)
 
     def __iter__(self):
         for x in self.generate().items():
@@ -96,39 +100,94 @@ class DatasetGenerator:
         lines = []
         tables_columns_types = {} 
         tables_constraints = {}
+        table_order = []
         for n, c in self._name_class_map.items():
             tables_constraints[n] = []
             d = {}
             instance = c()
             for attr in instance.attrs:
                 o = getattr(instance, attr)
-                if isinstance(o, str):
-                    parts = o.split('__')
-                    ref = self._name_class_map[parts[0]]()
-                    d[attr] = getattr(ref, parts[1])._sql_equivalent
-                    tables_constraints[n].append('CONSTRAINT fk_{}_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(n, parts[0], attr, parts[0], parts[1]))
-                else:
+                if isinstance(o, ForeignKey):
+                    ref = o.references_table()
+                    d[attr] = getattr(ref, o.references_field)._sql_equivalent
+                    if o.references_table.__name__ not in table_order:
+                        table_order.append(o.references_table.__name__)
+                    # table_order.add(n)
+                    tables_constraints[n].append('CONSTRAINT fk_{}_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(n, o.references_table.__name__, attr, o.references_table.__name__, o.references_field))
+                elif isinstance(o, BaseDammy):
                     d[attr] = o._sql_equivalent
+                else:
+                    d[attr] = infer_type(o)
+
+            if n not in table_order:
+                table_order.append(n)
             tables_columns_types[n] = d
 
         if create_tables:
-            #raise NotImplementedError("Column data types and constraints missing")
-            for name, columns in tables_columns_types.items():
-                columns_with_specs = ['\t{} {}'.format(column, t) for column, t in columns.items()]
-                constraints = ['\t{}'.format(constraint) for constraint in tables_constraints[name]]
-                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(name, ',\n'.join(columns_with_specs + constraints)))
+            for table_name in table_order:
+                columns_with_specs = ['\t{} {}'.format(column, t) for column, t in tables_columns_types[table_name].items()]
+                constraints = ['\t{}'.format(constraint) for constraint in tables_constraints[table_name]]
+                lines.append('CREATE TABLE IF NOT EXISTS "{}" (\n{}\n);'.format(table_name, ',\n'.join(columns_with_specs + constraints)))
 
-        for table_name, rows in self.data.items():
-            tuples = [', '.join(['"{}"'.format(value) if isinstance(value, str) else str(value) for value in row.values()]) for row in rows]
+        for table_name in table_order:
+            tuples = [', '.join(['"{}"'.format(value) if isinstance(value, str) else str(value) for value in row.values()]) for row in self.data[table_name]]
             lines.append('INSERT INTO {} ({}) VALUES \n{};'.format(table_name, ', '.join(tables_columns_types[table_name].keys()), ',\n'.join(['\t({})'.format(tp) for tp in tuples])))
 
-        if save_to is None:
-            return '\n'.join(lines)
-        else:
-            pass
+        sql = '\n'.join(lines)
+
+        if save_to is not None:
+            with open(save_to, 'w') as f:
+                f.write(sql)
+        return sql  
 
     def __str__(self):
         return str(self.data)
 
     def __getitem__(self, key):
         return self.data[key]
+
+class AutoIncrement(BaseDammy):
+    """
+    Represents an automatically incrementing field. By default starts by 1 and increments by 1
+    """
+
+    def __init__(self, start=1, increment=1):
+        super(AutoIncrement, self).__init__('INTEGER')
+        if self._last_generated is None:
+            self._last_generated = start - 1
+        self._increment = increment
+
+    """
+    Generates and updates the next value
+    """
+    def generate(self, dataset=None):
+        return self._generate(self._last_generated + 1)
+
+class DatabaseConstraint:
+    pass    # TODO
+
+class Constraint(DatabaseConstraint):
+    pass    # TODO
+
+class Unique(DatabaseConstraint):
+    pass    # TODO
+
+class NotNull(DatabaseConstraint):
+    pass    # TODO
+
+class PrimaryKey(DatabaseConstraint):
+    pass    # TODO
+
+class ForeignKey(DatabaseConstraint):
+    def __init__(self, references_table, references_field):
+        self.references_table = references_table
+        self.references_field = references_field
+
+class Check(DatabaseConstraint):
+    pass    # TODO
+
+class Default(DatabaseConstraint):
+    pass    # TODO
+
+class Index(DatabaseConstraint):
+    pass    # TODO

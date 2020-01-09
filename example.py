@@ -1,7 +1,7 @@
 from datetime import datetime
 from core import DammyEntity, DatasetGenerator
 from stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime
-from db import AutoIncrement
+from db import AutoIncrement, PrimaryKey, ForeignKey, Unique
 
 # Define what a person looks like
 class Person(DammyEntity):
@@ -16,11 +16,12 @@ class Person(DammyEntity):
 class CarManufacturer(DammyEntity):
     identifier = AutoIncrement()
     manufacturer_name = CarBrand()
+    constant_field = True
 
 class Car(DammyEntity):
-    brand = 'CarManufacturer__manufacturer_name'
+    brand = ForeignKey(CarManufacturer, 'manufacturer_name')
     model = CarModel(car_brand=brand)
-    owner = 'Person__identifier'
+    owner = ForeignKey(Person, 'identifier')
 
 # Generate 10 random people
 # for i in range(0, 10):
