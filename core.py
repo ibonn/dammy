@@ -115,8 +115,7 @@ class DatasetGenerator:
             self.data[c] = []
             self._generate_entity(c)
 
-
-    def get_sql(self, create_tables=True, save_to=None):
+    def get_sql(self, save_to=None, create_tables=True):
         lines = []
         tables_columns_types = {} 
         tables_constraints = {}
@@ -168,7 +167,10 @@ class DatasetGenerator:
         if save_to is not None:
             with open(save_to, 'w') as f:
                 f.write(sql)
-        return sql  
+        return sql
+
+    def __len__(self):
+        return len(self.data)
 
     def __str__(self):
         return str(self.data)
