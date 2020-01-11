@@ -49,22 +49,26 @@ class RandomName(BaseDammy):
         return self._generate(random.choice(RandomName._names[self._language_code][gender]))
 
 # TODO
-class CityName(BaseDammy):
+class CountryName(BaseDammy):
     """
-    Generates a random city name given a country code (using the ISO 3166-1 standard) (optional)
-    and a state/province code (using the ISO 3166-2 standard) (optional)
-    If any of the parameters are not given, it will be chosen at random
+    Generates a random country name
     """
 
-    def __init__(self, country_code=None, subdivision_code=None):
-        super(CityName, self).__init__('VARCHAR(50)')
-        self._country_code = country_code
+    _countries = None
+
+    def __init__(self):
+        super(CountryName, self).__init__('VARCHAR(50)')
+
+        if CountryName._countries is None:
+            with open('data/countries.json') as f:
+                CountryName._countries = json.load(f)
 
     """
-    Generates a new city name
+    Generates a new country name
     """
     def generate(self, dataset=None):
-        return self._generate('')
+        c = random.choice(list(CountryName._countries.keys()))
+        return self._generate(CountryName._countries[c])
 
 class RandomString(BaseDammy):
     """
@@ -228,7 +232,7 @@ class CarModel(BaseDammy):
         elif isinstance(car_brand, CarBrand):
             car_brand = car_brand._last_generated
 
-        elif isinstance(car_brand,ForeignKey):
+        elif isinstance(car_brand, ForeignKey):
             car_brand = get_reference(car_brand, dataset)
 
         return self._generate(random.choice(CarModel._models[car_brand]))

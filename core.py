@@ -1,8 +1,14 @@
 import random
 
+"""
+    EXCEPTIONS
+"""
 class DammyException(Exception):
     pass
 
+"""
+    HELPER FUNCTIONS
+"""
 def get_reference(value, dataset):
     if value.references_table.__name__ in dataset.data:
         values = dataset[value.references_table.__name__]
@@ -20,6 +26,9 @@ def infer_type(element):
     else:
         raise TypeError('{} is of unknown type'.format(element))
 
+"""
+    BASE CLASSES
+"""
 class BaseDammy:
 
     def __init__(self, sql_equivalent):
@@ -39,6 +48,9 @@ class BaseDammy:
     def __str__(self):
         return self.generate()
 
+    # def __getattr__(self, name):
+    #     pass
+
 class MultiValuedDammy(BaseDammy):
     def __init__(self, *args):
         self._values = args
@@ -48,6 +60,7 @@ class MultiValuedDammy(BaseDammy):
 
 class DammyEntity(BaseDammy):
     def __init__(self):
+        # TODO get primary keys and constraints here and generate the table creation sql
         self.attrs = [i for i, v in self.__class__.__dict__.items() if i[:1] != '_' and not callable(v)]
 
     def generate(self, dataset=None):
@@ -80,6 +93,9 @@ class DammyEntity(BaseDammy):
     def __str__(self):
         return str(dict(self))
 
+"""
+    DATASET
+"""
 class DatasetGenerator:
     def __init__(self, *kwargs):
         self.data = {}
@@ -160,6 +176,9 @@ class DatasetGenerator:
     def __getitem__(self, key):
         return self.data[key]
 
+"""
+    DATABASE
+"""
 class AutoIncrement(BaseDammy):
     """
     Represents an automatically incrementing field. By default starts by 1 and increments by 1

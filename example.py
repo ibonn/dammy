@@ -1,6 +1,6 @@
 from datetime import datetime
 from core import DammyEntity, DatasetGenerator
-from stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime
+from stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime, CountryName
 from db import AutoIncrement, ForeignKey
 
 # Define what a person looks like
@@ -12,6 +12,7 @@ class Person(DammyEntity):
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
     age = datetime.now() - birthday
+    country = CountryName()
 
 # Define what a car looks like
 class CarManufacturer(DammyEntity):
