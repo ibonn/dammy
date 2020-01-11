@@ -11,7 +11,7 @@ class Person(DammyEntity):
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
-    # age = datetime.now() - birthday   # TODO possible idea for the future
+    age = datetime.now() - birthday
 
 # Define what a car looks like
 class CarManufacturer(DammyEntity):

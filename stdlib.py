@@ -83,7 +83,36 @@ class RandomString(BaseDammy):
     def generate(self, dataset=None):
         return self._generate(''.join(random.choice(self._symbols) for i in range(self._length)))
 
-# TODO
+class TimeDeltaGenerator(BaseDammy):
+    """
+    This class is not intended for regular usage. 
+    It is used to allow random datetime addition/substraction and returned when such operation is performed
+    """
+    def __init__(self, a, b, op):
+        super(TimeDeltaGenerator, self).__init__('DATETIME')
+        self.operator = op
+        self.dt1 = a
+        self.dt2 = b
+
+    def generate(self, dataset=None):
+        if isinstance(self.dt1, RandomDateTime):
+            dt1 = self.dt1.generate()
+        else:
+            dt1 = self.dt1
+
+        if isinstance(self.dt2, RandomDateTime):
+            dt2 = self.dt2.generate()
+        else:
+            dt2 = self.dt2
+
+        if self.operator == '+':
+            return self._generate(dt1 + dt2)
+        elif self.operator == '-':
+            return self._generate(dt1 - dt2)
+        else:
+            # TODO
+            raise Exception()
+
 class RandomDateTime(BaseDammy):
     """
     Generates a random datetime in the given interval using the given format.
@@ -110,6 +139,35 @@ class RandomDateTime(BaseDammy):
         """
         datetime substraction
         """
+        if isinstance(other, RandomDateTime):
+            # A new RandomDateTime object is created without format to avoid genearting a string on the generator
+            return TimeDeltaGenerator(RandomDateTime(self._start, self._end), other, '-')
+
+        return NotImplemented
+
+    def __rsub__(self, other):
+        """
+        datetime substraction alternative
+        """
+        if isinstance(other, datetime.datetime):
+            return TimeDeltaGenerator(other, RandomDateTime(self._start, self._end), '-')
+        return NotImplemented
+
+    def __add__(self, other):
+        """
+        datetime addition
+        """
+        if isinstance(other, RandomDateTime):
+            return TimeDeltaGenerator(RandomDateTime(self._start, self._end), other, '+')
+            
+        return NotImplemented
+    
+    def __radd__(self, other):
+        """
+        datetime addition alternative
+        """
+        if isinstance(other, datetime.datetime):
+            return TimeDeltaGenerator(other, RandomDateTime(self._start, self._end), '+')
         return NotImplemented
 
     def generate(self, dataset=None):
