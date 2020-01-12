@@ -4,7 +4,7 @@ import time
 import datetime
 
 from db import ForeignKey
-from core import BaseDammy, get_reference
+from core import BaseDammy
 
 class RandomInteger(BaseDammy):
     """
@@ -233,6 +233,11 @@ class CarModel(BaseDammy):
             car_brand = car_brand._last_generated
 
         elif isinstance(car_brand, ForeignKey):
-            car_brand = get_reference(car_brand, dataset)
+            car_brand = car_brand.get_reference(dataset)
+
+            if len(car_brand) == 1:
+                car_brand = car_brand[0]
+            else:
+                raise Exception('A car model can only be ideintified by its brand')
 
         return self._generate(random.choice(CarModel._models[car_brand]))

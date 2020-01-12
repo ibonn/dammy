@@ -9,12 +9,6 @@ class DammyException(Exception):
 """
     HELPER FUNCTIONS
 """
-def get_reference(value, dataset):
-    if value.references_table.__name__ in dataset.data:
-        values = dataset[value.references_table.__name__]
-        return random.choice(values)[value.references_fields[0]] # TODO if more than one reference, this should change
-    else:
-        raise DammyException('Reference to {} not found'.format(value.references_table.__name__))
 
 def infer_type(element):
     if isinstance(element, bool):
@@ -72,11 +66,11 @@ class DammyEntity(BaseDammy):
                     raise DammyException('Reference to an entity ({}) given but no dataset containing {}s supplied'.format(attr_obj.references_table.__name__, attr_obj.references_table.__name__))
                 else:
                     if isinstance(dataset, DatasetGenerator):
-                        while dataset._counters[attr_obj.references_table.__name__] != 0:
-                            dataset._generate_entity(attr_obj.references_table.__name__)
+                        while dataset._counters[attr_obj.table_name] != 0:
+                            dataset._generate_entity(attr_obj.table_name)
 
-                    chosen = random.choice(dataset[attr_obj.references_table.__name__])
-                    result[attr] = chosen[attr_obj.references_fields[0]]    # TODO if more than one reference is wanted this should change
+                    chosen = random.choice(dataset[attr_obj.table_name])
+                    result[attr] = chosen[attr_obj.ref_fields[0]]    # TODO if more than one reference is wanted this should change
 
             elif isinstance(attr_obj, BaseDammy):
                 result[attr] = attr_obj.generate(dataset)
@@ -132,10 +126,10 @@ class DatasetGenerator:
 
                 # If the attribute is a foreign key, add reference
                 if isinstance(o, ForeignKey):
-                    ref = o.references_table()
-                    d[attr] = '{} {}'.format(getattr(ref, o.references_fields[0])._sql_equivalent, o._get_sql())  # TODO if more than one reference, this should change
-                    if o.references_table.__name__ not in table_order:
-                        table_order.append(o.references_table.__name__)
+                    ref = o.ref_table()
+                    d[attr] = '{} {}'.format(getattr(ref, o.ref_fields[0])._sql_equivalent, o._get_sql())  # TODO if more than one reference, this should change
+                    if o.table_name not in table_order:
+                        table_order.append(o.table_name)
                     
                     # tables_constraints[n].append() # IN CASE OF CONSTRAINT OBJECT
 
@@ -209,14 +203,22 @@ class DatabaseConstraint:
         raise DammyException('The _get_sql() method must be overridden')
 
 class ForeignKey(DatabaseConstraint):
-    def __init__(self, references_table, *args):
+    def __init__(self, ref_table, *args):
         super(ForeignKey, self).__init__('fk')
-        self.references_table = references_table
-        self.references_fields = args
+
+        self.ref_table = ref_table
+        self.ref_fields = args
+
+        self.table_name = ref_table.__name__
 
     def _get_sql(self, *args):
-        if len(args) == 0:
-            # TODO raise error if len(args) != len(references_field)
-            return 'FOREIGN KEY REFERENCES {}({})'.format(self.references_table.__name__, ', '.join(self.references_fields))
+        raise NotImplementedError()
+
+    def get_reference(self, dataset):
+        if self.table_name in dataset.data:
+            values = dataset[self.table_name]
+            rand_row = random.choice(values)
+            ref = tuple(rand_row[v] for v in self.ref_fields) 
+            return ref
         else:
-            return 'FOREIGN KEY ({}) REFERENCES {}({})'.format(', '.join(args), self.references_table.__name__, ', '.join(self.references_fields))
+            raise DammyException('Reference to {} not found'.format(self.table_name))

@@ -30,6 +30,7 @@ class Car(DammyEntity):
 #     print(Person())
 
 # Generate a dataset with 94234 people, 8 manufacturers and 20000 cars
-dataset = DatasetGenerator((Car, 20000), (CarManufacturer, 8), (Person, 94234))
+dataset = DatasetGenerator((Car, 3), (CarManufacturer, 8), (Person, 4))
 
-dataset.get_sql(save_to='dataset.sql')      # Save to sql (Beta)
+print(dataset)
+# dataset.get_sql(save_to='dataset.sql')      # Save to sql (Beta)
