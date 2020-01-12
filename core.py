@@ -96,6 +96,42 @@ class DammyEntity(BaseDammy):
     def __str__(self):
         return str(dict(self))
 
+class DammyGenerator(BaseDammy):
+    """
+    This class is not intended for regular usage. 
+    It is used to allow addition/substraction... 
+    operations with regular and Dammy objects
+    and it is returned when such operation is performed
+    """
+    def __init__(self, a, b, op, sql):
+        super(DammyGenerator, self).__init__(sql)
+        self.operator = op
+        self.d1 = a
+        self.d2 = b
+
+    def generate(self, dataset=None):
+        if isinstance(self.d1, BaseDammy):
+            d1 = self.d1.generate()
+        else:
+            d1 = self.d1
+
+        if isinstance(self.d2, BaseDammy):
+            d2 = self.d2.generate()
+        else:
+            d2 = self.d2
+
+        if self.operator == '+':
+            return self._generate(d1 + d2)
+        elif self.operator == '-':
+            return self._generate(d1 - d2)
+        elif self.operator == '*':
+            raise NotImplementedError()
+        elif self.operator == '/':
+            raise NotImplementedError
+        else:
+            # TODO
+            raise Exception()
+
 """
     DATASET
 """
