@@ -21,6 +21,7 @@ class CarManufacturer(DammyEntity):
     constant_field = True
 
 class Car(DammyEntity):
+    car_id = PrimaryKey(AutoIncrement())
     brand = ForeignKey(CarManufacturer, 'manufacturer_name')
     model = CarModel(car_brand=brand)
     owner = ForeignKey(Person, 'first_name', 'last_name')
@@ -32,5 +33,5 @@ class Car(DammyEntity):
 # Generate a dataset with 94234 people, 8 manufacturers and 20000 cars
 dataset = DatasetGenerator((Car, 3), (CarManufacturer, 8), (Person, 4))
 
-print(dataset)
-# dataset.get_sql(save_to='dataset.sql')      # Save to sql (Beta)
+# print(dataset)
+print(dataset.get_sql(save_to='dataset.sql'))      # Save to sql (Beta)

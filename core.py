@@ -1,5 +1,14 @@
 import random
 
+# TODO
+def infer_type(o):
+    if isinstance(o, bool):
+        return 'BOOLEAN'
+    if isinstance(o, int):
+        return 'INTEGER'
+    else:
+        raise TypeError('Type {} has not SQL equivalent'.format(type(o)))
+
 """
     EXCEPTIONS
 """
@@ -40,7 +49,10 @@ class MultiValuedDammy(BaseDammy):
 
 class DammyEntity(BaseDammy):
     def __init__(self):
-        self.attrs = [i for i, v in self.__class__.__dict__.items() if i[:1] != '_' and not callable(v)]
+        items = self.__class__.__dict__.items()
+        self.attrs = [i for i, v in items if i[:1] != '_' and not callable(v)]
+        self.primary_key = [i for i, v in items if isinstance(v, PrimaryKey)]
+        self.foreign_keys = [i for i, v in items if isinstance(v, ForeignKey)]
 
     def generate(self, dataset=None):
         result = {}
@@ -65,8 +77,7 @@ class DammyEntity(BaseDammy):
 
             # Generate primary keys
             elif isinstance(attr_obj, PrimaryKey):
-                for field in attr_obj.fields:
-                    result[attr] = field.generate(dataset)
+                result[attr] = attr_obj.field.generate(dataset)
 
             # Generate other fields
             elif isinstance(attr_obj, BaseDammy):
@@ -108,7 +119,69 @@ class DatasetGenerator:
             self._generate_entity(c)
 
     def get_sql(self, save_to=None, create_tables=True):
-        raise NotImplementedError()
+
+        lines = []
+
+        if create_tables:
+            table_def = {}
+            table_order = []
+            for table, data in self.data.items():
+                instance = self._name_class_map[table]()
+                columns = instance.attrs
+                primary_key = instance.primary_key
+                foreign_keys = instance.foreign_keys
+
+                columns_info = []
+                constraint_info = []
+
+                for attr in columns:
+                    if attr in foreign_keys:
+                        fk_fields = []
+                        fk = getattr(self._name_class_map[table], attr)
+                        for f in fk.ref_fields:
+                            field = getattr(fk.ref_table, f)
+                            name = '{}_{}'.format(attr, f)
+                            fk_fields.append(name)
+                            columns_info.append('{} {}'.format(name, field._sql_equivalent))
+
+                        if fk.table_name not in table_order:
+                            table_order.append(fk.table_name)
+
+                        constraint_info.append('CONSTRAINT fk_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(attr, ', '.join(fk_fields), fk.table_name, ', '.join(fk.ref_fields)))
+
+                    elif attr in primary_key:
+                        field = getattr(self._name_class_map[table], attr)
+                        columns_info.append('{} {}'.format(attr, field.field._sql_equivalent))
+
+                    else:
+                        field = getattr(self._name_class_map[table], attr)
+                        if isinstance(field, BaseDammy):
+                            columns_info.append('{} {}'.format(attr, field._sql_equivalent))
+                        else:
+                            columns_info.append('{} {}'.format(attr, infer_type(field)))
+
+                constraint_info.append('CONSTRAINT pk_{} PRIMARY KEY ({})'.format('_'.join(primary_key), ', '.join(primary_key)))
+                table_info = columns_info + constraint_info
+
+                if table not in table_order:
+                    table_order.append(table)
+                table_def[table] = 'CREATE TABLE IF NOT EXISTS {} (\n\t{}\n);'.format(table, ',\n\t'.join(table_info))
+
+            for table in table_order:
+                lines.append(table_def[table])
+
+        for table, data in self.data.items():
+            columns = self._name_class_map[table]().attrs
+            table_data =',\n\t'.join(['({})'.format(', '.join(['"{}"'.format(v) if isinstance(v, str) else str(v) for v in row.values()])) for row in data])
+            lines.append('INSERT INTO {} ({}) VALUES \n\t{};'.format(table, ', '.join(columns), table_data))
+
+        sql = '\n'.join(lines)
+
+        if save_to is not None:
+            with open(save_to, 'w') as f:
+                f.write(sql)
+
+        return sql
 
     def __len__(self):
         return len(self.data)
@@ -147,24 +220,22 @@ class DatabaseConstraint:
         raise NotImplementedError('The _get_sql() method must be overridden')
 
 class PrimaryKey(DatabaseConstraint):
-    def __init__(self, *args):
-        self.fields = args
-
-    def __len__(self):
-        return len(self.fields)
+    def __init__(self, k):
+        self.field = k
+        self._sql_equivalent = k._sql_equivalent
 
 class ForeignKey(DatabaseConstraint):
     def __init__(self, ref_table, *args):
         super(ForeignKey, self).__init__('fk')
 
-        self.ref_table = ref_table
-        self.ref_fields = args
-
         for attr in args:
             attr_val = getattr(ref_table, attr)
             if not isinstance(attr_val, PrimaryKey):
                 raise Exception('Expected PrimaryKey or Unique, got {}'.format(attr_val.__class__.__name__))
-
+        
+        self.ref_table = ref_table
+        self.ref_fields = args
+        
         self.table_name = ref_table.__name__
 
     def __len__(self):
