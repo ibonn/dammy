@@ -57,7 +57,11 @@ class DammyEntity(BaseDammy):
                             dataset._generate_entity(attr_obj.table_name)
 
                     chosen = random.choice(dataset[attr_obj.table_name])
-                    result[attr] = chosen[attr_obj.ref_fields[0]]
+                    if len(attr_obj) == 1:
+                        result[attr] = chosen[attr_obj.ref_fields[0]]
+                    else:
+                        for n in attr_obj.ref_fields:
+                            result['{}_{}'.format(attr, n)] = chosen[n]
 
             # Generate primary keys
             elif isinstance(attr_obj, PrimaryKey):
@@ -146,6 +150,9 @@ class PrimaryKey(DatabaseConstraint):
     def __init__(self, *args):
         self.fields = args
 
+    def __len__(self):
+        return len(self.fields)
+
 class ForeignKey(DatabaseConstraint):
     def __init__(self, ref_table, *args):
         super(ForeignKey, self).__init__('fk')
@@ -159,6 +166,9 @@ class ForeignKey(DatabaseConstraint):
                 raise Exception('Expected PrimaryKey or Unique, got {}'.format(attr_val.__class__.__name__))
 
         self.table_name = ref_table.__name__
+
+    def __len__(self):
+        return len(self.ref_fields)
 
     def get_reference(self, dataset):
         if self.table_name in dataset.data:

@@ -5,9 +5,9 @@ from db import AutoIncrement, ForeignKey, PrimaryKey
 
 # Define what a person looks like
 class Person(DammyEntity):
-    identifier = PrimaryKey(AutoIncrement())
-    first_name = RandomName(language_code='es')
-    last_name = RandomName(language_code='es')
+    identifier = AutoIncrement()
+    first_name = PrimaryKey(RandomName(language_code='es'))
+    last_name = PrimaryKey(RandomName(language_code='es'))
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
@@ -23,7 +23,7 @@ class CarManufacturer(DammyEntity):
 class Car(DammyEntity):
     brand = ForeignKey(CarManufacturer, 'manufacturer_name')
     model = CarModel(car_brand=brand)
-    owner = ForeignKey(Person, 'identifier')
+    owner = ForeignKey(Person, 'first_name', 'last_name')
 
 # Generate 10 random people
 # for i in range(0, 10):
