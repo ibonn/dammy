@@ -1,1 +1,1 @@
-from core import AutoIncrement, DatabaseConstraint, ForeignKey
+from core import AutoIncrement, DatabaseConstraint, ForeignKey, PrimaryKey
