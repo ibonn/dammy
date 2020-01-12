@@ -267,7 +267,7 @@ class ForeignKey(DatabaseConstraint):
         for attr in args:
             attr_val = getattr(ref_table, attr)
             if not isinstance(attr_val, PrimaryKey):
-                raise Exception('Expected PrimaryKey or Unique, got {}'.format(attr_val.__class__.__name__))
+                raise Exception('Expected PrimaryKey, got {}'.format(attr_val.__class__.__name__))
         
         self.ref_table = ref_table
         self.ref_fields = args
