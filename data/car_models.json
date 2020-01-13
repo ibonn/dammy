@@ -36,7 +36,7 @@
         "Sonic",
         "Spark"
     ],
-    "Citroën": [
+    "Citro\u00ebn": [
         "AX",
         "BX",
         "C2",
@@ -58,7 +58,11 @@
         "Testarossa"
     ],
     "Fiat": [
-        "TODO"
+        "500",
+        "500L",
+        "500X",
+        "Qubo",
+        "Spider"
     ],
     "Ford": [
         "Fiesta",
@@ -67,47 +71,117 @@
         "Mustang"
     ],
     "Kia": [
-        "TODO"
+        "Cadenza",
+        "Forte",
+        "K900",
+        "Optima",
+        "Rio",
+        "Soul",
+        "Stinger"
     ],
     "Lexus": [
-        "TODO"
+        "ES",
+        "GS",
+        "GX",
+        "LS",
+        "LX",
+        "NX",
+        "RX",
+        "UX"
     ],
     "Mazda": [
-        "TODO"
+        "MX-5 Miata",
+        "Mazda3",
+        "Mazda6"
     ],
     "Mercedes-Benz": [
-        "TODO"
+        "A-Class",
+        "C-Class",
+        "E-Class",
+        "S-Class"
     ],
     "Opel": [
-        "TODO"
+        "Agila",
+        "Astra",
+        "Calibra",
+        "Corsa",
+        "Meriva",
+        "Vectra",
+        "Zafira"
     ],
     "Peugeot": [
-        "TODO"
+        "2008",
+        "208",
+        "3008",
+        "308",
+        "4007",
+        "5008",
+        "508",
+        "RCZ"
     ],
     "Porsche": [
-        "TODO"
+        "Boxster",
+        "Carrera",
+        "Cayman",
+        "Speedster",
+        "Spyder",
+        "Targa"
     ],
     "Renault": [
-        "TODO"
+        "Captur",
+        "Clio",
+        "Espace",
+        "Kadjar",
+        "Laguna",
+        "Megane",
+        "Twingo"
     ],
     "SEAT": [
         "Alhambra",
         "Arona",
         "Ateca",
         "Ibiza",
-        "León",
+        "Le\u00f3n",
         "Tarraco"
     ],
     "Suzuki": [
-        "TODO"
+        "APV",
+        "Alto",
+        "Celerio",
+        "Ciaz",
+        "Jimny",
+        "Swift"
+    ],
+    "Tesla": [
+        "Cybertruck",
+        "Model 3",
+        "Model S",
+        "Model X",
+        "Model Y",
+        "Roadster"
     ],
     "Toyota": [
-        "TODO"
+        "Avalon",
+        "C-HR",
+        "Camry",
+        "Corolla",
+        "Highlander",
+        "Prius",
+        "Yaris"
     ],
     "Volkswagen": [
-        "TODO"
+        "Arteon",
+        "Atlas",
+        "Golf",
+        "Jetta",
+        "Passat",
+        "Polo",
+        "Tiguan"
     ],
     "Volvo": [
-        "TODO"
+        "S60",
+        "S90",
+        "V60",
+        "V90"
     ]
 }
