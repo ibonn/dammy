@@ -10,3 +10,4 @@ install:
 script:
     - 'python -c "from dammy import *"'
     - 'python -c "from dammy.db import *"'
+    - 'python -c "from dammy.stdlib import *"'
