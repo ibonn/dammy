@@ -1,11 +1,15 @@
 import random
 
-# TODO
+"""
+    HELPER FUNCTIONS
+"""
 def infer_type(o):
     if isinstance(o, bool):
         return 'BOOLEAN'
-    if isinstance(o, int):
+    elif isinstance(o, int):
         return 'INTEGER'
+    elif isinstance(o, float):
+        return 'FLOAT'
     else:
         raise TypeError('Type {} has not SQL equivalent'.format(type(o)))
 
@@ -129,8 +133,7 @@ class DammyGenerator(BaseDammy):
         elif self.operator == '/':
             raise NotImplementedError
         else:
-            # TODO
-            raise Exception()
+            raise TypeError('Unknown operator {}'.format(self.operator))
 
 """
     DATASET

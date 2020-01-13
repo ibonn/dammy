@@ -47,7 +47,6 @@ class RandomName(BaseDammy):
             gender = random.choice(['male', 'female'])
         return self._generate(random.choice(RandomName._names[gender]))
 
-# TODO
 class CountryName(BaseDammy):
     """
     Generates a random country name
