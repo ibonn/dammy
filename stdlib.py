@@ -24,15 +24,14 @@ class RandomInteger(BaseDammy):
 
 class RandomName(BaseDammy):
     """
-    Generates a random name given a language code and a gender (optional)
+    Generates a random name given a gender (optional)
     If gender not given, it will be chosen at random
     """
 
     _names = None
 
-    def __init__(self, language_code, gender=None):
+    def __init__(self, gender=None):
         super(RandomName, self).__init__('VARCHAR(15)')
-        self._language_code = language_code
         self._gender = gender
 
         if RandomName._names is None:
@@ -46,7 +45,7 @@ class RandomName(BaseDammy):
         gender = self._gender
         if gender is None:
             gender = random.choice(['male', 'female'])
-        return self._generate(random.choice(RandomName._names[self._language_code][gender]))
+        return self._generate(random.choice(RandomName._names[gender]))
 
 # TODO
 class CountryName(BaseDammy):
