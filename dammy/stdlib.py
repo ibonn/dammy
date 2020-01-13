@@ -2,6 +2,7 @@ import json
 import random
 import time
 import datetime
+import pkg_resources
 
 from .db import ForeignKey
 from .core import BaseDammy, DammyGenerator
@@ -35,7 +36,7 @@ class RandomName(BaseDammy):
         self._gender = gender
 
         if RandomName._names is None:
-            with open('data/names.json') as f:
+            with pkg_resources.resource_stream('dammy', 'data/names.json') as f:
                 RandomName._names = json.load(f)
 
     """
@@ -58,7 +59,7 @@ class CountryName(BaseDammy):
         super(CountryName, self).__init__('VARCHAR(50)')
 
         if CountryName._countries is None:
-            with open('data/countries.json') as f:
+            with pkg_resources.resource_stream('dammy', 'data/countries.json') as f:
                 CountryName._countries = json.load(f)
 
     """
@@ -163,7 +164,7 @@ class CarBrand(BaseDammy):
     def __init__(self):
         super(CarBrand, self).__init__('VARCHAR(15)')
         if CarBrand._brands is None:
-            with open('data/car_models.json') as f:
+            with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarBrand._brands = list(json.load(f).keys())
 
     """
@@ -184,7 +185,7 @@ class CarModel(BaseDammy):
         self._car_brand = car_brand
 
         if CarModel._models is None:
-            with open('data/car_models.json') as f:
+            with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarModel._models = json.load(f)
 
     """

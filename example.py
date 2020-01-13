@@ -5,8 +5,8 @@ from dammy.db import AutoIncrement, ForeignKey, PrimaryKey
 
 # Define what a person looks like
 class Person(DammyEntity):
-    identifier = AutoIncrement()
-    first_name = PrimaryKey(RandomName())
+    identifier = PrimaryKey(AutoIncrement())
+    first_name = RandomName()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
@@ -23,7 +23,7 @@ class Car(DammyEntity):
     car_id = PrimaryKey(AutoIncrement())
     brand = ForeignKey(CarManufacturer, 'manufacturer_name')
     model = CarModel(car_brand=brand)
-    owner = ForeignKey(Person, 'first_name', 'last_name')
+    owner = ForeignKey(Person, 'identifier')
 
 # Generate 10 random people
 for i in range(0, 10):
