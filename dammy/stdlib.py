@@ -3,8 +3,8 @@ import random
 import time
 import datetime
 
-from db import ForeignKey
-from core import BaseDammy, DammyGenerator
+from .db import ForeignKey
+from .core import BaseDammy, DammyGenerator
 
 class RandomInteger(BaseDammy):
     """
