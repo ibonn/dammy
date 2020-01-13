@@ -1,13 +1,12 @@
 from datetime import datetime
-from core import DammyEntity, DatasetGenerator
-from stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime, CountryName
-from db import AutoIncrement, ForeignKey, PrimaryKey
+from dammy import DammyEntity, DatasetGenerator
+from dammy.stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime, CountryName
+from dammy.db import AutoIncrement, ForeignKey, PrimaryKey
 
 # Define what a person looks like
 class Person(DammyEntity):
     identifier = AutoIncrement()
-    first_name = PrimaryKey(RandomName(language_code='es'))
-    last_name = PrimaryKey(RandomName(language_code='es'))
+    first_name = PrimaryKey(RandomName())
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
@@ -27,11 +26,11 @@ class Car(DammyEntity):
     owner = ForeignKey(Person, 'first_name', 'last_name')
 
 # Generate 10 random people
-# for i in range(0, 10):
-#     print(Person())
+for i in range(0, 10):
+    print(Person())
 
 # Generate a dataset with 94234 people, 8 manufacturers and 20000 cars
-dataset = DatasetGenerator((Car, 3), (CarManufacturer, 8), (Person, 4))
+dataset = DatasetGenerator((Car, 20000), (CarManufacturer, 8), (Person, 94234))
 
-# print(dataset)
-print(dataset.get_sql(save_to='dataset.sql'))      # Save to sql (Beta)
+print(dataset)                          # Prints the dataset as a dict
+dataset.get_sql(save_to='dataset.sql')  # Save to sql (Beta)
