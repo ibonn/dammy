@@ -86,5 +86,7 @@ pip install dammy
 ```
 
 ## Release history
+* 0.0.2
+    * Fixed bug in stdlib
 * 0.0.1
     * First release
