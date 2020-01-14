@@ -91,7 +91,7 @@ class DammyEntity(BaseDammy):
             # Generate other fields
             elif isinstance(attr_obj, BaseDammy):
                 result[attr] = attr_obj.generate(dataset)
-            
+
             # Generate constant values
             else:
                 result[attr] = attr_obj
@@ -196,7 +196,7 @@ class DatasetGenerator:
                                 attr,
                                 ', '.join(fk_fields),
                                 fk.table_name,
-                                 ', '.join(fk.ref_fields)
+                                ', '.join(fk.ref_fields)
                             )
                         )
 
