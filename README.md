@@ -1,6 +1,6 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ibonn/dammy)
 ![Travis (.org)](https://img.shields.io/travis/ibonn/dammy)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c9d6a9d4fe844f43899037994b7c309e)](https://www.codacy.com/manual/ibonn/cinnamon?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibonn/cinnamon&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c321b2ee18234712aff9ce2ca69ae6eb)](https://www.codacy.com/manual/ibonn/dammy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibonn/dammy&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/141299ec4d7519f889d6/maintainability)](https://codeclimate.com/github/ibonn/dammy/maintainability)
 [![PyPI download month](https://img.shields.io/pypi/dm/dammy.svg)](https://pypi.python.org/pypi/dammy/)
 [![PyPI download week](https://img.shields.io/pypi/dw/dammy.svg)](https://pypi.python.org/pypi/dammy/)
