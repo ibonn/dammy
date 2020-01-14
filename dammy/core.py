@@ -48,8 +48,8 @@ class MultiValuedDammy(BaseDammy):
     def __init__(self, *args):
         self._values = args
 
-    def generate(self):
-        return [value.generate() for value in self._values]
+    def generate(self, dataset=None):
+        return [value.generate(dataset=dataset) for value in self._values]
 
 class DammyEntity(BaseDammy):
     def __init__(self):
@@ -66,7 +66,12 @@ class DammyEntity(BaseDammy):
             # Get references to foreign keys
             if isinstance(attr_obj, ForeignKey):
                 if dataset is None:
-                    raise DammyException('Reference to an entity ({}) given but no dataset containing {}s supplied'.format(attr_obj.references_table.__name__, attr_obj.references_table.__name__))
+                    raise DammyException(
+                        'Reference to an entity ({}) given but no dataset containing {}s supplied'.format(
+                            attr_obj.table_name,
+                            attr_obj.table_name
+                        )
+                    )
                 else:
                     if isinstance(dataset, DatasetGenerator):
                         while dataset._counters[attr_obj.table_name] != 0:
@@ -102,8 +107,8 @@ class DammyEntity(BaseDammy):
 
 class DammyGenerator(BaseDammy):
     """
-    This class is not intended for regular usage. 
-    It is used to allow addition/substraction... 
+    This class is not intended for regular usage.
+    It is used to allow addition/substraction...
     operations with regular and Dammy objects
     and it is returned when such operation is performed
     """
@@ -186,7 +191,14 @@ class DatasetGenerator:
                         if fk.table_name not in table_order:
                             table_order.append(fk.table_name)
 
-                        constraint_info.append('CONSTRAINT fk_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(attr, ', '.join(fk_fields), fk.table_name, ', '.join(fk.ref_fields)))
+                        constraint_info.append(
+                            'CONSTRAINT fk_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(
+                                attr,
+                                ', '.join(fk_fields),
+                                fk.table_name,
+                                 ', '.join(fk.ref_fields)
+                            )
+                        )
 
                     elif attr in primary_key:
                         field = getattr(self._name_class_map[table], attr)
@@ -245,18 +257,15 @@ class AutoIncrement(BaseDammy):
             self._last_generated = start - 1
         self._increment = increment
 
-    """
-    Generates and updates the next value
-    """
     def generate(self, dataset=None):
+        """
+        Generates and updates the next value
+        """
         return self._generate(self._last_generated + 1)
 
 class DatabaseConstraint:
     def __init__(self, prefix):
         self._prefix = prefix
-
-    def _get_sql(self, *args):
-        raise NotImplementedError('The _get_sql() method must be overridden')
 
 class PrimaryKey(DatabaseConstraint):
     def __init__(self, k):
@@ -271,10 +280,10 @@ class ForeignKey(DatabaseConstraint):
             attr_val = getattr(ref_table, attr)
             if not isinstance(attr_val, PrimaryKey):
                 raise Exception('Expected PrimaryKey, got {}'.format(attr_val.__class__.__name__))
-        
+
         self.ref_table = ref_table
         self.ref_fields = args
-        
+
         self.table_name = ref_table.__name__
 
     def __len__(self):
@@ -284,7 +293,7 @@ class ForeignKey(DatabaseConstraint):
         if self.table_name in dataset.data:
             values = dataset[self.table_name]
             rand_row = random.choice(values)
-            ref = tuple(rand_row[v] for v in self.ref_fields) 
+            ref = tuple(rand_row[v] for v in self.ref_fields)
             return ref
         else:
             raise DammyException('Reference to {} not found'.format(self.table_name))
