@@ -71,7 +71,7 @@ class CountryName(BaseDammy):
 
 class RandomString(BaseDammy):
     """
-    Generates a random string with the given length and symbols. 
+    Generates a random string with the given length and symbols.
     The default symbols are all the letters in the english alphabet (both uppercase and lowercase) and numbers 0 through 9
     """
 
@@ -134,7 +134,7 @@ class RandomDateTime(BaseDammy):
             return DammyGenerator(RandomDateTime(self._start, self._end), other, '+', 'DATETIME')
             
         return NotImplemented
-    
+
     def __radd__(self, other):
         """
         datetime addition alternative
