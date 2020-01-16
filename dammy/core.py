@@ -28,28 +28,103 @@ class BaseDammy:
         self._last_generated = None
         self._sql_equivalent = sql_equivalent
 
+    def generate_raw(self, dataset=None):
+        raise DammyException('The generate_raw() method must be overridden')
+
     def generate(self, dataset=None):
-        raise DammyException('The generate() method must be overridden')
+        return self.generate_raw(dataset)
 
     def _generate(self, value):
         self._last_generated = value
         return value
 
+    # +
     def __add__(self, other):
-        return MultiValuedDammy(self, other)
+        return DammyGenerator(self, other, '+', self._sql_equivalent)
+
+    def __radd__(self, other):
+        raise NotImplementedError()
+
+    # -
+    def __sub__(self, other):
+        return DammyGenerator(self, other, '-', self._sql_equivalent)
+
+    def __rsub__(self, other):
+        raise NotImplementedError()
+
+    # *
+    def __mul__(self, other):
+        return DammyGenerator(self, other, '*', self._sql_equivalent)
+
+    def __rmul__(self, other):
+        raise NotImplementedError()
+
+    # %
+    def __mod__(self, other):
+        raise NotImplementedError()
+
+    def __rmod__(self, other):
+        raise NotImplementedError()
+
+    # //
+    def __div__(self, other):
+        raise NotImplementedError()
+
+    def __rdiv__(self, other):
+        raise NotImplementedError()
+
+    # /
+    def __truediv__(self, other):
+        return DammyGenerator(self, other, '/', self._sql_equivalent)
+
+    def __rtruediv__(self, other):
+        raise NotImplementedError()
+
+    # <
+    def __lt__(self, other):
+        raise NotImplementedError()
+
+    def __rlt__(self, other):
+        raise NotImplementedError()
+
+    # <=
+    def __le__(self, other):
+        raise NotImplementedError()
+
+    def __rle__(self, other):
+        raise NotImplementedError()
+
+    # ==
+    def __eq__(self, other):
+        raise NotImplementedError()
+
+    def __req__(self, other):
+        raise NotImplementedError()
+
+    # !=
+    def __ne__(self, other):
+        raise NotImplementedError()
+
+    def __rne__(self, other):
+        raise NotImplementedError()
+
+    # >
+    def __gt__(self, other):
+        raise NotImplementedError()
+    def __rgt__(self, other):
+        raise NotImplementedError()
+
+    # >=
+    def __ge__(self, other):
+        raise NotImplementedError()
+    def __rge__(self, other):
+        raise NotImplementedError()
 
     def __str__(self):
         return self.generate()
 
-    # def __getattr__(self, name):
-    #     pass
-
-class MultiValuedDammy(BaseDammy):
-    def __init__(self, *args):
-        self._values = args
-
-    def generate(self, dataset=None):
-        return [value.generate(dataset=dataset) for value in self._values]
+    def __getattr__(self, name):
+        return AttributeGetter(self, name)
 
 class DammyEntity(BaseDammy):
     def __init__(self):
@@ -58,7 +133,8 @@ class DammyEntity(BaseDammy):
         self.primary_key = [i for i, v in items if isinstance(v, PrimaryKey)]
         self.foreign_keys = [i for i, v in items if isinstance(v, ForeignKey)]
 
-    def generate(self, dataset=None):
+
+    def generate_raw(self, dataset=None):
         result = {}
         for attr in self.attrs:
             attr_obj = getattr(self, attr)
@@ -103,7 +179,16 @@ class DammyEntity(BaseDammy):
             yield x
 
     def __str__(self):
-        return str(dict(self))
+        return str(self.generate())
+
+class AttributeGetter(BaseDammy):
+    def __init__(self, obj, attr):
+        super(AttributeGetter, self).__init__(obj._sql_equivalent)
+        self.obj = obj
+        self.attr = attr
+
+    def generate_raw(self, dataset=None):
+        return getattr(self.obj.generate(dataset), self.attr)
 
 class DammyGenerator(BaseDammy):
     """
@@ -118,14 +203,26 @@ class DammyGenerator(BaseDammy):
         self.d1 = a
         self.d2 = b
 
-    def generate(self, dataset=None):
-        if isinstance(self.d1, BaseDammy):
-            d1 = self.d1.generate()
+    def generate_raw(self, dataset=None):
+        if isinstance(self.d1, DammyGenerator):
+            d1 = self.d1.generate_raw(dataset)
+
+        elif isinstance(self.d1, BaseDammy):
+            if self.d1._last_generated is None:
+                d1 = self.d1.generate_raw(dataset)
+            else:
+                d1 = self.d1._last_generated
         else:
             d1 = self.d1
 
-        if isinstance(self.d2, BaseDammy):
-            d2 = self.d2.generate()
+        if isinstance(self.d2, DammyGenerator):
+            d2 = self.d2.generate_raw(dataset)
+
+        elif isinstance(self.d2, BaseDammy):
+            if self.d2._last_generated is None:
+                d2 = self.d2.generate_raw(dataset)
+            else:
+                d2 = self.d2._last_generated
         else:
             d2 = self.d2
 
@@ -134,9 +231,9 @@ class DammyGenerator(BaseDammy):
         elif self.operator == '-':
             return self._generate(d1 - d2)
         elif self.operator == '*':
-            raise NotImplementedError()
+            return self._generate(d1 * d2)
         elif self.operator == '/':
-            raise NotImplementedError
+            return self._generate(d1 / d2)
         else:
             raise TypeError('Unknown operator {}'.format(self.operator))
 
@@ -163,70 +260,13 @@ class DatasetGenerator:
             self._generate_entity(c)
 
     def get_sql(self, save_to=None, create_tables=True):
+        # TODO obtener las estructuras de cada una de las tablas
+        # TODO Obtener las columnas y sus tipos
+        # TODO Obtener el orden de creación de tablas y de inserción de valores
+        # TODO Si hay que crear las tablas crearlas
+        # TODO Insertar los valores
 
-        lines = []
-
-        if create_tables:
-            table_def = {}
-            table_order = []
-            for table, data in self.data.items():
-                instance = self._name_class_map[table]()
-                columns = instance.attrs
-                primary_key = instance.primary_key
-                foreign_keys = instance.foreign_keys
-
-                columns_info = []
-                constraint_info = []
-
-                for attr in columns:
-                    if attr in foreign_keys:
-                        fk_fields = []
-                        fk = getattr(self._name_class_map[table], attr)
-                        for f in fk.ref_fields:
-                            field = getattr(fk.ref_table, f)
-                            name = '{}_{}'.format(attr, f)
-                            fk_fields.append(name)
-                            columns_info.append('{} {}'.format(name, field._sql_equivalent))
-
-                        if fk.table_name not in table_order:
-                            table_order.append(fk.table_name)
-
-                        constraint_info.append(
-                            'CONSTRAINT fk_{} FOREIGN KEY ({}) REFERENCES {}({})'.format(
-                                attr,
-                                ', '.join(fk_fields),
-                                fk.table_name,
-                                ', '.join(fk.ref_fields)
-                            )
-                        )
-
-                    elif attr in primary_key:
-                        field = getattr(self._name_class_map[table], attr)
-                        columns_info.append('{} {}'.format(attr, field.field._sql_equivalent))
-
-                    else:
-                        field = getattr(self._name_class_map[table], attr)
-                        if isinstance(field, BaseDammy):
-                            columns_info.append('{} {}'.format(attr, field._sql_equivalent))
-                        else:
-                            columns_info.append('{} {}'.format(attr, infer_type(field)))
-
-                constraint_info.append('CONSTRAINT pk_{} PRIMARY KEY ({})'.format('_'.join(primary_key), ', '.join(primary_key)))
-                table_info = columns_info + constraint_info
-
-                if table not in table_order:
-                    table_order.append(table)
-                table_def[table] = 'CREATE TABLE IF NOT EXISTS {} (\n\t{}\n);'.format(table, ',\n\t'.join(table_info))
-
-            for table in table_order:
-                lines.append(table_def[table])
-
-        for table, data in self.data.items():
-            columns = self._name_class_map[table]().attrs
-            table_data =',\n\t'.join(['({})'.format(', '.join(['"{}"'.format(v) if isinstance(v, str) else str(v) for v in row.values()])) for row in data])
-            lines.append('INSERT INTO {} ({}) VALUES \n\t{};'.format(table, ', '.join(columns), table_data))
-
-        sql = '\n'.join(lines)
+        sql = ''
 
         if save_to is not None:
             with open(save_to, 'w') as f:
@@ -257,7 +297,7 @@ class AutoIncrement(BaseDammy):
             self._last_generated = start - 1
         self._increment = increment
 
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         """
         Generates and updates the next value
         """

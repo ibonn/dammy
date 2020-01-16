@@ -20,7 +20,7 @@ class RandomInteger(BaseDammy):
     """
     Generates a new random integer
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         return self._generate(random.randint(self._lb, self._ub))
 
 class RandomName(BaseDammy):
@@ -42,7 +42,7 @@ class RandomName(BaseDammy):
     """
     Generates a new random name
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         gender = self._gender
         if gender is None:
             gender = random.choice(['male', 'female'])
@@ -65,7 +65,7 @@ class CountryName(BaseDammy):
     """
     Generates a new country name
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         c = random.choice(list(CountryName._countries.keys()))
         return self._generate(CountryName._countries[c])
 
@@ -83,7 +83,7 @@ class RandomString(BaseDammy):
     """
     Generates a new random string
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         return self._generate(''.join(random.choice(self._symbols) for i in range(self._length)))
 
 class RandomDateTime(BaseDammy):
@@ -113,9 +113,7 @@ class RandomDateTime(BaseDammy):
         datetime substraction
         """
         if isinstance(other, RandomDateTime):
-            # A new RandomDateTime object is created without format to avoid genearting a string on the generator
-            return DammyGenerator(RandomDateTime(self._start, self._end), other, '-', 'DATETIME')
-
+            return DammyGenerator(self, other, '-', 'DATETIME')
         return NotImplemented
 
     def __rsub__(self, other):
@@ -123,7 +121,7 @@ class RandomDateTime(BaseDammy):
         datetime substraction alternative
         """
         if isinstance(other, datetime.datetime):
-            return DammyGenerator(other, RandomDateTime(self._start, self._end), '-', 'DATETIME')
+            return DammyGenerator(other, self, '-', 'DATETIME')
         return NotImplemented
 
     def __add__(self, other):
@@ -131,7 +129,7 @@ class RandomDateTime(BaseDammy):
         datetime addition
         """
         if isinstance(other, RandomDateTime):
-            return DammyGenerator(RandomDateTime(self._start, self._end), other, '+', 'DATETIME')
+            return DammyGenerator(self, other, '+', 'DATETIME')
 
         return NotImplemented
 
@@ -140,20 +138,25 @@ class RandomDateTime(BaseDammy):
         datetime addition alternative
         """
         if isinstance(other, datetime.datetime):
-            return DammyGenerator(other, RandomDateTime(self._start, self._end), '+', 'DATETIME')
+            return DammyGenerator(other, self, '+', 'DATETIME')
         return NotImplemented
 
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         """
         Generates a new random datetime
         """
         s = time.mktime(self._start.timetuple())
         e = time.mktime(self._end.timetuple())
         t = random.uniform(s, e)
+    
+        return self._generate(datetime.datetime.fromtimestamp(t))
+
+    def generate(self, dataset=None):
+        d = self.generate_raw(dataset)
         if self._format is None:
-            return self._generate(datetime.datetime.fromtimestamp(t))
+            return d
         else:
-            return self._generate(time.strftime(self._format, time.localtime(t)))
+            return d.strftime(self._format)
 
 class CarBrand(BaseDammy):
     """
@@ -170,7 +173,7 @@ class CarBrand(BaseDammy):
     """
     Generates a new car brand
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         return self._generate(random.choice(CarBrand._brands))
 
 class CarModel(BaseDammy):
@@ -191,7 +194,7 @@ class CarModel(BaseDammy):
     """
     Generates a new car model
     """
-    def generate(self, dataset=None):
+    def generate_raw(self, dataset=None):
         car_brand = self._car_brand
         if car_brand is None:
             car_brand = CarBrand().generate()

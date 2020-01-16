@@ -1,1 +1,1 @@
-from .core import BaseDammy, DammyEntity, MultiValuedDammy, DammyGenerator, DatasetGenerator, DammyException
+from .core import BaseDammy, DammyEntity, DammyGenerator, DatasetGenerator, DammyException
