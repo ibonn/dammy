@@ -39,5 +39,5 @@ for i in range(0, 10):
 # Generate a dataset with 94234 people, 8 manufacturers and 20000 cars
 dataset = DatasetGenerator((Car, 20000), (CarManufacturer, 8), (Person, 94234))
 
-print(dataset)                          # Prints the dataset as a dict
+print(dataset)                          # Prints the dataset as a dict (Not recommended, dataset is very large)
 dataset.get_sql(save_to='dataset.sql')  # Save to sql (Beta)

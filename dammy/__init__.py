@@ -4,5 +4,4 @@ the dataset generator used to generate datasets (DatasetGenerator) and the excep
 fromm all dammy exceptions inherit (DammyException)
 """
 
-from .DatasetGenerator import DatasetGenerator
-from .core import BaseDammy, DammyEntity, FunctionResult, AttributeGetter, MethodCaller, DammyGenerator
+from .core import BaseDammy, DammyEntity, FunctionResult, AttributeGetter, MethodCaller, DammyGenerator, DatasetGenerator
