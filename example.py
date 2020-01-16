@@ -18,12 +18,13 @@ class Person(DammyEntity):
     age = (datetime.now() - birthday).days / 365.25
     country = CountryName()
 
-# Define what a car looks like
+# Define what a car manufacturer looks like
 class CarManufacturer(DammyEntity):
     identifier = AutoIncrement()
     manufacturer_name = PrimaryKey(CarBrand())
     constant_field = True
 
+# Define what a car looks like
 class Car(DammyEntity):
     car_id = PrimaryKey(AutoIncrement())
     brand = ForeignKey(CarManufacturer, 'manufacturer_name')
@@ -35,7 +36,7 @@ for i in range(0, 10):
     print(Person())
 
 # Generate a dataset with 94234 people, 8 manufacturers and 20000 cars
-dataset = DatasetGenerator((Car, 10), (CarManufacturer, 5), (Person, 7))
+dataset = DatasetGenerator((Car, 20000), (CarManufacturer, 8), (Person, 94234))
 
 print(dataset)                          # Prints the dataset as a dict
 dataset.get_sql(save_to='dataset.sql')  # Save to sql (Beta)

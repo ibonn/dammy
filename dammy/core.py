@@ -10,8 +10,16 @@ def infer_type(o):
         return 'INTEGER'
     elif isinstance(o, float):
         return 'FLOAT'
+    elif isinstance(o, str):
+        return 'VARCHAR({})'.format(len(o))
     else:
         raise TypeError('Type {} has not SQL equivalent'.format(type(o)))
+
+def sql_literal(o):
+    if isinstance(o, str):
+        return '"{}"'.format(o)
+    else:
+        return str(o)
 
 """
     EXCEPTIONS
@@ -251,13 +259,88 @@ class DatasetGenerator:
             self._generate_entity(c)
 
     def get_sql(self, save_to=None, create_tables=True):
-        # TODO obtener las estructuras de cada una de las tablas
-        # TODO Obtener las columnas y sus tipos
-        # TODO Obtener el orden de creación de tablas y de inserción de valores
-        # TODO Si hay que crear las tablas crearlas
-        # TODO Insertar los valores
+        table_order = []
+        tables = {}
+        instances = {}
+        for name, c in self._name_class_map.items():
 
-        sql = ''
+            tables[name] = {
+                'columns': [],
+                'column_types': [],
+                'constraints': []
+            }
+
+            instances[name] = c()
+
+            tables[name]['constraints'].append(
+                'CONSTRAINT pk_{} PRIMARY KEY ({})'.format(
+                    name,
+                    ', '.join(instances[name].primary_key)
+                    )
+                )
+
+            for col in instances[name].attrs:
+                col_obj = getattr(instances[name], col)
+
+                if isinstance(col_obj, ForeignKey):
+                    fk_fields = []
+
+                    for field in col_obj.ref_fields:
+                        ref_field = getattr(col_obj.ref_table, field)
+                        fk_fields.append('{}_{}'.format(col, field))
+                        tables[name]['column_types'].append(ref_field._sql_equivalent)
+
+                    tables[name]['columns'].extend(fk_fields)
+
+                    tables[name]['constraints'].append(
+                        'CONSTRAINT fk_{} ({}) REFERENCES {}({})'.format(
+                            col,
+                            ', '.join(fk_fields),
+                            col_obj.table_name,
+                            ', '.join(col_obj.ref_fields)
+                        )
+                    )
+
+                    if col_obj.table_name not in table_order:
+                        table_order.append(col_obj.table_name)
+
+                elif isinstance(col_obj, PrimaryKey):
+                    tables[name]['columns'].append(col)
+                    tables[name]['column_types'].append(col_obj.field._sql_equivalent)
+
+                elif isinstance(col_obj, BaseDammy):
+                    tables[name]['columns'].append(col)
+                    tables[name]['column_types'].append(col_obj._sql_equivalent)
+
+                else:
+                    tables[name]['columns'].append(col)
+                    tables[name]['column_types'].append(infer_type(col))
+
+            if name not in table_order:
+                table_order.append(name)
+
+        lines = []
+
+        if create_tables:
+            for table in table_order:
+                lines.append(
+                    'CREATE TABLE IF NOT EXISTS {} (\n\t{}\n);'.format(
+                        table,
+                        ',\n\t'.join([' '.join(x) for x in zip(tables[table]['columns'], tables[table]['column_types'])] + tables[table]['constraints'])
+                    )
+                )
+        
+        for table in table_order:
+            for row in self.data[table]:
+                lines.append(
+                    'INSERT INTO {} ({}) VALUES ({});'.format(
+                        table,
+                        ', '.join(tables[table]['columns']),
+                        ', '.join([sql_literal(x) for x in row.values()]),
+                    )
+                )
+
+        sql = '\n'.join(lines)
 
         if save_to is not None:
             with open(save_to, 'w') as f:
