@@ -11,7 +11,7 @@ random.seed(1234)
 # Define what a person looks like
 class Person(DammyEntity):
     identifier = PrimaryKey(AutoIncrement())
-    first_name = RandomName()
+    first_name = RandomName().upper()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)

@@ -42,82 +42,48 @@ class BaseDammy:
     def __add__(self, other):
         return DammyGenerator(self, other, '+', self._sql_equivalent)
 
-    def __radd__(self, other):
-        raise NotImplementedError()
-
     # -
     def __sub__(self, other):
         return DammyGenerator(self, other, '-', self._sql_equivalent)
-
-    def __rsub__(self, other):
-        raise NotImplementedError()
 
     # *
     def __mul__(self, other):
         return DammyGenerator(self, other, '*', self._sql_equivalent)
 
-    def __rmul__(self, other):
-        raise NotImplementedError()
-
     # %
     def __mod__(self, other):
-        raise NotImplementedError()
-
-    def __rmod__(self, other):
         raise NotImplementedError()
 
     # //
     def __div__(self, other):
         raise NotImplementedError()
 
-    def __rdiv__(self, other):
-        raise NotImplementedError()
-
     # /
     def __truediv__(self, other):
         return DammyGenerator(self, other, '/', self._sql_equivalent)
 
-    def __rtruediv__(self, other):
-        raise NotImplementedError()
-
     # <
     def __lt__(self, other):
-        raise NotImplementedError()
-
-    def __rlt__(self, other):
         raise NotImplementedError()
 
     # <=
     def __le__(self, other):
         raise NotImplementedError()
 
-    def __rle__(self, other):
-        raise NotImplementedError()
-
     # ==
     def __eq__(self, other):
-        raise NotImplementedError()
-
-    def __req__(self, other):
         raise NotImplementedError()
 
     # !=
     def __ne__(self, other):
         raise NotImplementedError()
 
-    def __rne__(self, other):
-        raise NotImplementedError()
-
     # >
     def __gt__(self, other):
-        raise NotImplementedError()
-    def __rgt__(self, other):
         raise NotImplementedError()
 
     # >=
     def __ge__(self, other):
-        raise NotImplementedError()
-    def __rge__(self, other):
         raise NotImplementedError()
 
     def __str__(self):
@@ -189,6 +155,31 @@ class AttributeGetter(BaseDammy):
 
     def generate_raw(self, dataset=None):
         return getattr(self.obj.generate(dataset), self.attr)
+
+    def __call__(self, *args, **kwargs):
+        return MethodCaller(self.obj, self.attr, args)
+
+class MethodCaller(BaseDammy):
+    def __init__(self, obj, method, *args, **kwargs):
+        super(MethodCaller, self).__init__(obj._sql_equivalent)
+        self.obj = obj
+        self.method = method
+        self.args = args[0]
+        self.kwargs = kwargs
+
+    def generate_raw(self, dataset=None):
+        method = getattr(self.obj.generate(dataset), self.method)
+
+        if len(self.args) == 1 and len(self.args[0]) == 0:
+            if len(self.kwargs) == 0:
+                return method()
+            else:
+                return method(**self.kwargs)
+        else:
+            if len(self.kwargs) == 0:
+                return method(*self.args)
+            else:
+                return method(*self.args, **self.kwargs)
 
 class DammyGenerator(BaseDammy):
     """
