@@ -36,11 +36,11 @@ from dammy import DammyEntity
 from dammy.stdlib import RandomName, RandomString, RandomDateTime, RandomInteger, CountryName
 
 class Person(DammyEntity):
-    first_name = RandomName()
+    first_name = RandomName().upper()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
-    age = datetime.now() - birthday
+    age = cast((datetime.now() - birthday).days / 365.25, int)
     country = CountryName()
 
 # Generate 1000 random people
@@ -57,11 +57,11 @@ from dammy.stdlib import RandomName, RandomString, RandomDateTime, RandomInteger
 # Define what a person looks like
 class Person(DammyEntity):
     identifier = PrimaryKey(AutoIncrement())
-    first_name = RandomName()
+    first_name = RandomName().upper()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
-    age = datetime.now() - birthday
+    age = cast((datetime.now() - birthday).days / 365.25, int)
     country = CountryName()
 
 # Define what a car looks like
