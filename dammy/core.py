@@ -1,6 +1,6 @@
 """
 This module contains the most important dammy classes. Ideally it should be separated
-in 2 modules (core, db, dataset_generator) but the dependencies between them make this 
+in 2 modules (core, db, dataset_generator) but the dependencies between them make this
 impossible without causing circular imports
 """
 import random
@@ -502,7 +502,7 @@ class DatasetGenerator:
                         ',\n\t'.join([' '.join(x) for x in zip(tables[table]['columns'], tables[table]['column_types'])] + tables[table]['constraints'])
                     )
                 )
-        
+
         for table in table_order:
             for row in self.data[table]:
                 lines.append(
