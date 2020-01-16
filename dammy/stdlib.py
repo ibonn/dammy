@@ -148,7 +148,7 @@ class RandomDateTime(BaseDammy):
         s = time.mktime(self._start.timetuple())
         e = time.mktime(self._end.timetuple())
         t = random.uniform(s, e)
-    
+
         return self._generate(datetime.datetime.fromtimestamp(t))
 
     def generate(self, dataset=None):
