@@ -21,10 +21,10 @@ class RandomInteger(BaseDammy):
         self._lb = lb
         self._ub = ub
 
-    """
-    Generates a new random integer
-    """
     def generate_raw(self, dataset=None):
+        """
+        Generates a new random integer
+        """
         return self._generate(random.randint(self._lb, self._ub))
 
 class RandomName(BaseDammy):
@@ -43,10 +43,10 @@ class RandomName(BaseDammy):
             with pkg_resources.resource_stream('dammy', 'data/names.json') as f:
                 RandomName._names = json.load(f)
 
-    """
-    Generates a new random name
-    """
     def generate_raw(self, dataset=None):
+        """
+        Generates a new random name
+        """
         gender = self._gender
         if gender is None:
             gender = random.choice(['male', 'female'])
@@ -66,10 +66,11 @@ class CountryName(BaseDammy):
             with pkg_resources.resource_stream('dammy', 'data/countries.json') as f:
                 CountryName._countries = json.load(f)
 
-    """
-    Generates a new country name
-    """
+
     def generate_raw(self, dataset=None):
+        """
+        Generates a new country name
+        """
         c = random.choice(list(CountryName._countries.keys()))
         return self._generate(CountryName._countries[c])
 
@@ -84,10 +85,10 @@ class RandomString(BaseDammy):
         self._length = length
         self._symbols = list(symbols)
 
-    """
-    Generates a new random string
-    """
     def generate_raw(self, dataset=None):
+        """
+        Generates a new random string
+        """
         return self._generate(''.join(random.choice(self._symbols) for i in range(self._length)))
 
 class RandomDateTime(BaseDammy):
@@ -174,10 +175,10 @@ class CarBrand(BaseDammy):
             with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarBrand._brands = list(json.load(f).keys())
 
-    """
-    Generates a new car brand
-    """
     def generate_raw(self, dataset=None):
+        """
+        Generates a new car brand
+        """
         return self._generate(random.choice(CarBrand._brands))
 
 class CarModel(BaseDammy):
@@ -195,10 +196,10 @@ class CarModel(BaseDammy):
             with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarModel._models = json.load(f)
 
-    """
-    Generates a new car model
-    """
     def generate_raw(self, dataset=None):
+        """
+        Generates a new car model
+        """
         car_brand = self._car_brand
         if car_brand is None:
             car_brand = CarBrand().generate()
