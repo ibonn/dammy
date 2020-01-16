@@ -61,3 +61,5 @@ latex_elements = {
     'preamble': '',
     'figure_align': 'htbp'
 }
+
+master_doc = 'index'
