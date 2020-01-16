@@ -81,7 +81,7 @@ dataset = DatasetGenerator((Car, 20000), (Person, 94234))
 dataset.get_sql(save_to='cars_with_owners.sql')
 ```
 ## Installation
-To install the latest release of dammy pip run
+To install the latest release of dammy using pip run
 ```
 pip install dammy
 ```
