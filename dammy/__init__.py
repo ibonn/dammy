@@ -1,1 +1,6 @@
+"""
+This module contains all classes needed to create new classes compatible with dammy,
+the dataset generator used to generate datasets (DatasetGenerator) and the exception
+fromm all dammy exceptions inherit (DammyException)
+"""
 from .core import BaseDammy, DammyEntity, DammyGenerator, DatasetGenerator, DammyException

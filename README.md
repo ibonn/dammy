@@ -19,9 +19,10 @@ Populate your database with dummy data
 
 ## Introduction
 
-With dammy you can populate your database with a few lines of code.
+dammy is a powerful and simple tool to populate your database with dummy data with a few lines of code.
 
 ## Features
+* Great simplicity
 * A set of prebuilt objects (Person names, country names, car manufacturers and models, random dates...)
 * The possibility to expand the previous library
 * Generate datasets and export them to SQL

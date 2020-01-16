@@ -1,3 +1,7 @@
+"""
+this module contains some basic and common utilities, such as random generation for
+person names, countries, integers, strings, dates... 
+"""
 import json
 import random
 import time
