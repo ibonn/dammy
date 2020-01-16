@@ -87,6 +87,12 @@ pip install dammy
 ```
 
 ## Release history
+* 0.1.1
+    * Can get attributes of entities
+    * Can call methods on entities
+    * Ability to perform operations added
+    * Code improved
+    * Docstrings added
 * 0.0.3
     * Fixed import bug in stdlib
 * 0.0.1
