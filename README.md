@@ -1,4 +1,5 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ibonn/dammy)
+[![Documentation Status](https://readthedocs.org/projects/dammy/badge/?version=latest)](https://dammy.readthedocs.io/en/latest/?badge=latest)
 ![Travis (.org)](https://img.shields.io/travis/ibonn/dammy)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c321b2ee18234712aff9ce2ca69ae6eb)](https://www.codacy.com/manual/ibonn/dammy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibonn/dammy&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/141299ec4d7519f889d6/maintainability)](https://codeclimate.com/github/ibonn/dammy/maintainability)
