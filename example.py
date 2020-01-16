@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from dammy import DammyEntity, DatasetGenerator
+from dammy.functions import cast
 from dammy.stdlib import RandomInteger, RandomName, CarBrand, CarModel, RandomString, RandomDateTime, CountryName
 from dammy.db import AutoIncrement, ForeignKey, PrimaryKey
 
@@ -15,7 +16,7 @@ class Person(DammyEntity):
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
     favorite_number = RandomInteger(0, 10)
-    age = (datetime.now() - birthday).days / 365.25
+    age = cast((datetime.now() - birthday).days / 365.25, int)
     country = CountryName()
 
 # Define what a car manufacturer looks like
