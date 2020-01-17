@@ -3,16 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. toctree::
+   :maxdepth: 2
+
+   db
+   stdlib
+
 Documentation for dammy
 **************************
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+.. currentmodule:: dammy
+
+.. autosummary::
+
+   db
+   core
+   exceptions
+   functions
+   stdlib
 
 Overview
 ===================
 .. automodule:: dammy
-   :members:
 
 dammy module
 ===================

@@ -20,7 +20,7 @@ Populate your database with dummy data
 
 ## Introduction
 
-dammy is a powerful and simple tool to populate your database with dummy data with a few lines of code.
+dammy is a powerful and simple tool to populate your database with dummy data with a few lines of code. You can check the full documentation [here](https://readthedocs.org/projects/dammy/).
 
 ## Features
 * Great simplicity
