@@ -17,10 +17,10 @@ setup_args = dict(
     author_email='ibonescartin@protonmail.com',
     keywords=['dummy-data', 'database', 'sql', 'dummy', 'data', 'population'],
     url='https://github.com/ibonn/dammy',
-    download_url='https://pypi.org/project/dammy/',,
+    download_url='https://pypi.org/project/dammy/',
     project_urls={
         "Documentation": "https://readthedocs.org/projects/dammy/",
-        "Source Code": "https://github.com/ibonn/dammy",
+        "Source Code": "https://github.com/ibonn/dammy"
     },
     include_package_data=True
 )
