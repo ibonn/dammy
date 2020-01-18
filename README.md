@@ -88,6 +88,10 @@ pip install dammy
 ```
 
 ## Release history
+* 0.1.2
+    * Documentation improved
+    * DatasetGenerator moved from main to db
+    * Minor bugs fixed
 * 0.1.1
     * Can get attributes of entities
     * Can call methods on entities
