@@ -1,7 +1,6 @@
 """
-This module contains all classes needed to create new classes compatible with dammy,
-the dataset generator used to generate datasets (DatasetGenerator) and the exception
-fromm all dammy exceptions inherit (DammyException)
+dammy generates fake data, either to populate your databases with dummy data or for any other purspose.
+Datasets of any size can be easily generated and exported to SQL or as a dictionary. 
 """
 
-from .core import BaseDammy, DammyEntity, FunctionResult, AttributeGetter, MethodCaller, DammyGenerator, DatasetGenerator
+from .core import BaseDammy, DammyEntity, FunctionResult, AttributeGetter, MethodCaller, DammyGenerator
