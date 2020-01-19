@@ -12,7 +12,7 @@ the owner of at least one car.
 What is a generator?
 ====================
 In dammy, a generator is a class which generates random data. Plain and simple. 
-All generators must inherit :class:`dammy.BaseDammy`. Generators can be simple or
+All generators must inherit :class:`dammy.BaseGenerator`. Generators can be simple or
 composite. A simple generator generates a value, while a composite generator is composed
 of multiple simple generators and generates a value for each of them.
 
@@ -29,15 +29,15 @@ In our example, we will need 2 composite generators, one for the person and one 
         # The description of a person goes here
         pass
 
-Composite generators must inherit from :class:`dammy.DammyEntity`. So the final code looks like this::
+Composite generators must inherit from :class:`dammy.EntityGenerator`. So the final code looks like this::
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         # The description of a person goes here
         pass
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         # The description of a car goes here
         pass
 
@@ -52,15 +52,15 @@ a brand, a model and a plate number.
 But how to generate all of this? Don't worry about it, we have taken care of it and done the hard work
 for you. To generate all of this, just import stdlib (:doc:`stdlib`) and add the generators as follows::
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
     from dammy.stdlib import RandomName, CountryName, RandomInteger, CarBrand, CarModel
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         name = RandomName()         # Generate a random name (any gender)
         age = RandomInteger(18, 99) # Generate a randim integer between 18 and 99
         country = CountryName()     # Generate a country name
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         brand = CarBrand()                  # Generate a car brand
         model = CarModel(car_brand=brand)   # Generate a car model matching that brand
         plate = RandomInteger(1000, 9999)   # Generate a plate number
@@ -108,17 +108,17 @@ The updated example looks like this::
 
     from datetime import datetime
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
     from dammy.functions import cast
     from dammy.stdlib import RandomName, CountryName, RandomInteger, CarBrand, CarModel, RandomDateTime
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         name = RandomName()         # Generate a random name (any gender)
         birthdate = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')  # Generate a random datetime
         age = cast((datetime.now() - birthdate).days / 365.25, int) # Get the difference in days, divide it by 365.25 to get it in years and cast it to an integer
         country = CountryName()     # Generate a country name
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         brand = CarBrand()                          # Generate a car brand
         model = CarModel(car_brand=brand).upper()   # Generate a car model matching that brand and convert it to uppercase
         plate = RandomInteger(1000, 9999)           # Generate a plate number
@@ -138,17 +138,17 @@ To generate a dataset, persons and cars must be linked in some way. You could ju
 
     from datetime import datetime
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
     from dammy.functions import cast
     from dammy.stdlib import RandomName, CountryName, RandomInteger, CarBrand, CarModel, RandomDateTime
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         name = RandomName()         # Generate a random name (any gender)
         birthdate = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')  # Generate a random datetime
         age = cast((datetime.now() - birthdate).days / 365.25, int) # Get the difference in days, divide it by 365.25 to get it in years and cast it to an integer
         country = CountryName()     # Generate a country name
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         brand = CarBrand()                          # Generate a car brand
         model = CarModel(car_brand=brand).upper()   # Generate a car model matching that brand and convert it to uppercase
         plate = RandomInteger(1000, 9999)           # Generate a plate number
@@ -165,19 +165,19 @@ Primary and foreign keys can be used to achive this, as you would do with a regu
 
     from datetime import datetime
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
     from dammy.db import PrimaryKey, ForeignKey, AutoIncrement
     from dammy.functions import cast
     from dammy.stdlib import RandomName, CountryName, RandomInteger, CarBrand, CarModel, RandomDateTime
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         identifier = PrimaryKey(AutoIncrement())    # Add an autoincrement and make it primary key
         name = RandomName()         # Generate a random name (any gender)
         birthdate = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')  # Generate a random datetime
         age = cast((datetime.now() - birthdate).days / 365.25, int) # Get the difference in days, divide it by 365.25 to get it in years and cast it to an integer
         country = CountryName()     # Generate a country name
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         brand = CarBrand()                          # Generate a car brand
         model = CarModel(car_brand=brand).upper()   # Generate a car model matching that brand and convert it to uppercase
         plate = RandomInteger(1000, 9999)           # Generate a plate number
@@ -200,19 +200,19 @@ can be done using :class:`dammy.db.DatasetGenerator`::
 
     from datetime import datetime
 
-    from dammy import DammyEntity
+    from dammy import EntityGenerator
     from dammy.db import PrimaryKey, ForeignKey, AutoIncrement, DatasetGenerator
     from dammy.functions import cast
     from dammy.stdlib import RandomName, CountryName, RandomInteger, CarBrand, CarModel, RandomDateTime
 
-    class Person(DammyEntity):
+    class Person(EntityGenerator):
         identifier = PrimaryKey(AutoIncrement())    # Add an autoincrement and make it primary key
         name = RandomName()         # Generate a random name (any gender)
         birthdate = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')  # Generate a random datetime
         age = cast((datetime.now() - birthdate).days / 365.25, int) # Get the difference in days, divide it by 365.25 to get it in years and cast it to an integer
         country = CountryName()     # Generate a country name
 
-    class Car(DammyEntity):
+    class Car(EntityGenerator):
         brand = CarBrand()                          # Generate a car brand
         model = CarModel(car_brand=brand).upper()   # Generate a car model matching that brand and convert it to uppercase
         plate = RandomInteger(1000, 9999)           # Generate a plate number

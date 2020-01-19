@@ -1,3 +1,5 @@
+# dammy
+
 ![GitHub top language](https://img.shields.io/github/languages/top/ibonn/dammy)
 [![Documentation Status](https://readthedocs.org/projects/dammy/badge/?version=latest)](https://dammy.readthedocs.io/en/latest/?badge=latest)
 ![Travis (.org)](https://img.shields.io/travis/ibonn/dammy)
@@ -7,9 +9,8 @@
 [![PyPI download week](https://img.shields.io/pypi/dw/dammy.svg)](https://pypi.python.org/pypi/dammy/)
 [![PyPI download day](https://img.shields.io/pypi/dd/dammy.svg)](https://pypi.python.org/pypi/dammy/)
 
-# dammy
+Generate fake/dummy data for any purpose
 
-Populate your database with dummy data
 ## Table of contents
 
 * [Introduction](#introduction)
@@ -20,23 +21,26 @@ Populate your database with dummy data
 
 ## Introduction
 
-dammy is a powerful and simple tool to populate your database with dummy data with a few lines of code. You can check the full documentation [here](https://readthedocs.org/projects/dammy/).
+dammy is a powerful and simple tool to generate fake data. You can use it to mock classes, populate databases and and much more.
+You can check the full documentation [here](https://readthedocs.org/projects/dammy/).
 
 ## Features
-* Great simplicity
-* A set of prebuilt objects (Person names, country names, car manufacturers and models, random dates...)
-* The possibility to expand the previous library
-* Generate datasets and export them to SQL
+* Generate anything within the set of prebuilt objects (Person names, country names, car manufacturers and models, random dates...)
+* Compose more complex data easily (Full profiles, complete databases, )
+* The possibility to expand the previous set with little to no code
+* Completely intuitive, you will learn to use it in less than 10 minutes
+* Export the generated data to SQL
 
 ## Example
 
 If you wanted to generate 1000 random people, just define what a person looks like and dammy will handle the rest
 
 ``` python
-from dammy import DammyEntity
+from dammy import EntityGenerator
+from dammy.functions import cast
 from dammy.stdlib import RandomName, RandomString, RandomDateTime, RandomInteger, CountryName
 
-class Person(DammyEntity):
+class Person(EntityGenerator):
     first_name = RandomName().upper()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
@@ -49,14 +53,14 @@ for i in range(0, 1000):
     print(Person())
 ```
 
-It also supports relationships between tables
+It also supports relationships between tables, so you can generate data to populate databases
 ``` python
-from dammy import DammyEntity
+from dammy import EntityGenerator
 from dammy.db import AutoIncrement, PrimaryKey, ForeignKey
 from dammy.stdlib import RandomName, RandomString, RandomDateTime, RandomInteger, CountryName
 
 # Define what a person looks like
-class Person(DammyEntity):
+class Person(EntityGenerator):
     identifier = PrimaryKey(AutoIncrement())
     first_name = RandomName().upper()
     password = RandomString(5)
@@ -66,14 +70,14 @@ class Person(DammyEntity):
     country = CountryName()
 
 # Define what a car looks like
-class Car(DammyEntity):
+class Car(EntityGenerator):
     identifier = PrimaryKey(AutoIncrement())
     manufacturer_name = CarBrand())
     model = CarModel(car_brand=manufacturer_name)
     owner = ForeignKey(Person, 'identifier')
 ```
 
-And data can be exported to SQL
+And the data can be exported to SQL
 ``` python
 from dammy import DatasetGenerator
 
@@ -82,23 +86,46 @@ dataset = DatasetGenerator((Car, 20000), (Person, 94234))
 dataset.get_sql(save_to='cars_with_owners.sql')
 ```
 ## Installation
-To install the latest release of dammy using pip run
+To install the latest stable release of dammy using pip
 ```
 pip install dammy
 ```
 
+You can also install the latest development release by cloning the and installing it with pip
+```
+git clone https://github.com/ibonn/dammy.git dammy
+cd dammy
+pip install -e .
+```
+
 ## Release history
+* 0.1.3
+    * Code refactored
+    * All binary operations made possible between BaseGenerator objects
+    * BaseDammy renamed to BaseGenerator
+    * EntityGenerator renamed to OperationResult
+    * DammyEntity renamed to EntityGenerator
+    * Everything inherits from BaseGenerator
+    * Removed DatabaseConstraint
+    * Added UNIQUE constraint support
+    * Datasets can now be exported to JSON
+    * Entities can now be exported to JSON and CSV
+    * dammy.stdlib expanded with new built-in generators
+
 * 0.1.2
     * Documentation improved
     * DatasetGenerator moved from main to db
     * Minor bugs fixed
+
 * 0.1.1
     * Can get attributes of entities
     * Can call methods on entities
     * Ability to perform operations added
     * Code improved
     * Docstrings added
+
 * 0.0.3
     * Fixed import bug in stdlib
+
 * 0.0.1
     * First release

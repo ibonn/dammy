@@ -18,16 +18,15 @@ class DatasetRequiredException(DammyException):
 
     Example::
 
-        from dammy import DammyEntity
+        from dammy import EntityGenerator
         from dammy.stdlib import RandomInteger
 
-        class B(DammyEntity):
+        class B(EntityGenerator):
             attribute1 = RandomInteger(15, 546)
             reference_to_A = ForeignKey(A, 'attribute1')
 
         B().generate()  # generate() requires a dataset because B contains a reference to another generator
                         # thus, this call will result in a DatasetRequiredException
-    
     """
     pass
 
@@ -37,20 +36,41 @@ class IntegrityException(DammyException):
 
     Example::
 
-        from dammy import DammyEntity
+        from dammy import EntityGenerator
         from dammy.db import ForeignKey
         from dammy.stdlib import RandomInteger
 
-        class A(DammyEntity):
+        class A(EntityGenerator):
             attribute1 = RandomInteger(1, 10)
             attribute2 = RandomInteger(2, 5)
 
-        class B(DammyEntity):
+        class B(EntityGenerator):
             attribute1 = RandomInteger(15, 546)
             reference_to_A = ForeignKey(A, 'attribute1')
     
-    This exampe will raise a IntegrityException because reference_to_A in class B is a foreign key
+    This example will raise a IntegrityException because reference_to_A in class B is a foreign key
     referencing the field attribute1 from class A, and A.attribute1 is not a primary key
+    """
+    pass
 
+class MaximumRetriesExceededException(DammyException):
+    """
+    Raised when a unique field exceeds the maximum number of retries to generate a unique value
+
+    This is commonly raised when the amount of generated data is bigger than the available data
+    on a generator obtaining its data from a file.
+
+    Example::
+
+        from dammy.db import Unique
+        from dammy.stdlib import RandomInteger
+
+        x = Unique(RandomInteger(1, 10))
+
+        for i in range(0, 50):
+            print(x)            # Exception after generating 10 values
+
+    The code will result in an exception because it will try to generate 50 unique integers in the [1, 10]
+    interval, which is obviously impossible because there are 10 unique integers available
     """
     pass

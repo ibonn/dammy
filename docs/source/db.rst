@@ -20,5 +20,8 @@ The classes in the module are listed below.
 .. autoclass:: ForeignKey
     :members:
 
+.. autoclass:: Unique
+    :members:
+
 .. autoclass:: DatasetGenerator
     :members:

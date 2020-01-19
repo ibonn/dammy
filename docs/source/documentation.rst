@@ -25,10 +25,10 @@ The main module
 .. currentmodule:: dammy
 The classes in the main module are listed below.
 
-.. autoclass:: BaseDammy
+.. autoclass:: BaseGenerator
     :members:
 
-.. autoclass:: DammyEntity
+.. autoclass:: EntityGenerator
     :members:
 
 .. autoclass:: FunctionResult
@@ -40,7 +40,7 @@ The classes in the main module are listed below.
 .. autoclass:: MethodCaller
     :members:
 
-.. autoclass:: DammyGenerator
+.. autoclass:: OperationResult
     :members:
 
 More modules

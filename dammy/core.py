@@ -3,12 +3,17 @@ This module contains the most important dammy classes. Ideally it should be sepa
 in 2 modules (core, db, dataset_generator) but the dependencies between them make this
 impossible without causing circular imports
 """
-import random
-from .exceptions import DatasetRequiredException, IntegrityException
 
+import json
+import csv
+import random
+import warnings
+from enum import Enum
+
+from .exceptions import DatasetRequiredException, IntegrityException, MaximumRetriesExceededException
 
 ############################         CORE            ############################
-class BaseDammy:
+class BaseGenerator:
     """
     The base class from which all generators must inherit.
     """
@@ -50,123 +55,191 @@ class BaseDammy:
 
     def __add__(self, other):
         """
-        Performs the addition of 2 BaseDammy objects
+        Performs the addition of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return DammyGenerator(self, other, '+', self._sql_equivalent)
+        return OperationResult(self, other, OperationResult.Operator.addition, self._sql_equivalent)
+
+    def __radd__(self, other):
+        """
+        Performs the addition of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.addition, self._sql_equivalent)
 
     def __sub__(self, other):
         """
-        Performs the substraction of 2 BaseDammy objects
+        Performs the substraction of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return DammyGenerator(self, other, '-', self._sql_equivalent)
+        return OperationResult(self, other, OperationResult.Operator.substraction, self._sql_equivalent)
+
+    def __rsub__(self, other):
+        """
+        Performs the substraction of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.substraction, self._sql_equivalent)
 
     def __mul__(self, other):
         """
-        Performs the multiplication of 2 BaseDammy objects
+        Performs the multiplication of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return DammyGenerator(self, other, '*', self._sql_equivalent)
+        return OperationResult(self, other, OperationResult.Operator.multiplication, self._sql_equivalent)
+
+    def __rmul__(self, other):
+        """
+        Performs the multiplication of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.multiplication, self._sql_equivalent)
 
     def __mod__(self, other):
         """
-        Performs the modulus of 2 BaseDammy objects
+        Performs the modulus of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.modulus, self._sql_equivalent)
+
+    def __rmod__(self, other):
+        """
+        Performs the modulus of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.modulus, self._sql_equivalent)
 
     def __floordiv__(self, other):
         """
-        Performs the integer division of 2 BaseDammy objects
+        Performs the integer division of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.integer_division, self._sql_equivalent)
+
+    def __rfloordiv__(self, other):
+        """
+        Performs the integer division of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.integer_division, self._sql_equivalent)
 
     def __truediv__(self, other):
         """
-        Performs the true division of 2 BaseDammy objects
+        Performs the true division of 2 BaseGenerator objects
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return DammyGenerator(self, other, '/', self._sql_equivalent)
+        return OperationResult(self, other, OperationResult.Operator.division, self._sql_equivalent)
+
+    def __rtruediv__(self, other):
+        """
+        Performs the true division of 2 BaseGenerator objects
+
+        :param other: The other generator
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
+        """
+        return OperationResult(other, self, OperationResult.Operator.division, self._sql_equivalent)
 
     def __lt__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is less than the other
+        Compares 2 BaseGenerator objects to one another to check wether one is less than the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.lower_than, self._sql_equivalent)
 
     def __le__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is less or equal than the other
+        Compares 2 BaseGenerator objects to one another to check wether one is less or equal than the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.lower_equal, self._sql_equivalent)
 
     def __eq__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is equal to the other
+        Compares 2 BaseGenerator objects to one another to check wether one is equal to the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.equal, self._sql_equivalent)
 
     def __ne__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is not equal the other
+        Compares 2 BaseGenerator objects to one another to check wether one is not equal the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.not_equal, self._sql_equivalent)
 
     def __gt__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is greater than the other
+        Compares 2 BaseGenerator objects to one another to check wether one is greater than the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.greater_than, self._sql_equivalent)
 
     def __ge__(self, other):
         """
-        Compares 2 BaseDammy objects to one another to check wether one is greater or equal than the other
+        Compares 2 BaseGenerator objects to one another to check wether one is greater or equal than the other
 
         :param other: The other generator
-        :type other: BaseDammy
-        :returns: :class:`dammy.db.DammyGenerator`
+        :type other: BaseGenerator
+        :returns: :class:`dammy.db.OperationResult`
         """
-        return NotImplemented
+        return OperationResult(self, other, OperationResult.Operator.greater_equal, self._sql_equivalent)
+
+    def __hash__(self):
+        """
+        Returns the hash value of the object
+
+        :returns: int
+        """
+        return hash((self._last_generated,))
 
     def __str__(self):
         """
@@ -180,7 +253,7 @@ class BaseDammy:
 
     def __getattr__(self, name):
         """
-        Allows getting attribute values and calling methods on generators. See AttributeGetterç
+        Allows getting attribute values and calling methods on generators. See AttributeGetter
 
         :param name: The name of th attribute
         :type name: string
@@ -189,9 +262,9 @@ class BaseDammy:
         return AttributeGetter(self, name)
 
 
-class DammyEntity(BaseDammy):
+class EntityGenerator(BaseGenerator):
     """
-    The class from which all composite generators must inherit. 
+    The class from which all composite generators must inherit.
 
     .. note::
         All clases inheriting from this class should not have any other methods
@@ -199,15 +272,13 @@ class DammyEntity(BaseDammy):
     """
     def __init__(self):
         items = self.__class__.__dict__.items()
-        self.attrs = [i for i, v in items if i[:1] != '_' and not callable(v)]
-        self.primary_key = [i for i, v in items if isinstance(v, PrimaryKey)]
-        self.foreign_keys = [i for i, v in items if isinstance(v, ForeignKey)]
+        self.attrs = [name for name, value in items if name[:1] != '_' and not callable(value)]
 
     def generate_raw(self, dataset=None):
         """
         Gets all the attributes of the class and generates a new value.
 
-        Implementation of the generate_raw() method from BaseDammy. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -220,41 +291,94 @@ class DammyEntity(BaseDammy):
 
             # Get references to foreign keys
             if isinstance(attr_obj, ForeignKey):
-                if dataset is None:
-                    raise DatasetRequiredException(
-                        'Reference to an entity ({}) given but no dataset containing {}s supplied'.format(
-                            attr_obj.table_name,
-                            attr_obj.table_name
-                        )
-                    )
-                else:
-                    if isinstance(dataset, DatasetGenerator):
-                        while dataset._counters[attr_obj.table_name] != 0:
-                            dataset._generate_entity(attr_obj.table_name)
+                generated = attr_obj.generate(dataset)
+                for k, v in generated.items():
+                    result[k] = v
 
-                    chosen = random.choice(dataset[attr_obj.table_name])
-                    if len(attr_obj) == 1:
-                        result[attr] = chosen[attr_obj.ref_fields[0]]
-                    else:
-                        for n in attr_obj.ref_fields:
-                            result['{}_{}'.format(attr, n)] = chosen[n]
-
-            # Generate primary keys
-            elif isinstance(attr_obj, PrimaryKey):
-                result[attr] = attr_obj.field.generate(dataset)
+            # Generate primary keys and unique values
+            elif isinstance(attr_obj, Unique):
+                generated = attr_obj.generate(dataset)
+                for k, v in generated.items():
+                    result[k] = v
 
             # Generate other fields
-            elif isinstance(attr_obj, BaseDammy):
+            elif isinstance(attr_obj, BaseGenerator):
                 result[attr] = attr_obj.generate(dataset)
 
             # Generate constant values
             else:
                 result[attr] = attr_obj
 
+        return self._generate(result)
+
+    def _get_column_names(self):
+        """
+        Get the names of the columns for this entity
+
+        :returns: list containing the names for each column
+        """
+        result = []
+        for attr in self.attrs:
+            attr_obj = getattr(self, attr)
+
+            # Get references to foreign keys
+            if isinstance(attr_obj, ForeignKey):
+                result.extend(attr_obj.referenced_object.fields.keys())
+
+            # Generate primary keys and unique values
+            elif isinstance(attr_obj, Unique):
+                result.extend(attr_obj.fields.keys())
+
+            else:
+                result.append(attr)
+
         return result
 
+    def _get_instances(self, number):
+        """
+        Generate the specified number of instances
+
+        :param number: The number of instances to generate
+        :type number: int
+        :returns: list containing the specified number of instances of this entity
+        """
+        return [self.generate() for i in range(0, number)]
+
+    def to_json(self, number, save_to=None, indent=4):
+        """
+        Get the specified amount of instances as a list of json dicts
+
+        :param number: The number of instances
+        :param save_to: The path where the generated json will be saved. If none, it will be returned as a string
+        :type number: int
+        :type save_to: str
+        :returns: str containing the generated json if save_to=None, None in other cases
+        """
+        if save_to is None:
+            return json.dumps(self._get_instances(number), indent=indent)
+        else:
+            with open(save_to, 'w') as f:
+                json.dump(self._get_instances(number), f, indent=indent)
+                f.close()
+            return None
+
+    def to_csv(self, number, save_to):
+        """
+        Save the specified amount of instances in a csv file
+
+        :param number: The number of instances
+        :param save_to: The path to the file where the instances will be saved
+        :type number: int
+        :type save_to: str
+        """
+        with open(save_to, 'w') as f:
+            writer = csv.writer(f, delimiter=',')
+            writer.writerow(self._get_column_names())
+            writer.writerows([list(r.values()) for r in self._get_instances(number)])
+            f.close()
+
 ############################ Generator manipulation  ############################
-class FunctionResult(BaseDammy):
+class FunctionResult(BaseGenerator):
     """
     Allows the manipulation of generators by functions
     """
@@ -269,15 +393,15 @@ class FunctionResult(BaseDammy):
         """
         Generate a value and call the function using the generated value as a parameter
 
-        Implementation of the generate_raw() method from BaseDammy. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
         :returns: The result of running the generated value through the function
         """
-        return self.function(self.obj.generate(dataset), *self.args, **self.kwargs)
+        return self._generate(self.function(self.obj.generate(dataset), *self.args, **self.kwargs))
 
-class AttributeGetter(BaseDammy):
+class AttributeGetter(BaseGenerator):
     """
     Allows getting attribute values from values generated by generators
     """
@@ -290,13 +414,13 @@ class AttributeGetter(BaseDammy):
         """
         Generate a value and get the specified attribute
 
-        Implementation of the generate_raw() method from BaseDammy. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
         :returns: The value of the attribute on the generated object
         """
-        return getattr(self.obj.generate(dataset), self.attr)
+        return self._generate(getattr(self.obj.generate(dataset), self.attr))
 
     def __call__(self, *args, **kwargs):
         """
@@ -308,7 +432,7 @@ class AttributeGetter(BaseDammy):
         """
         return MethodCaller(self.obj, self.attr, args)
 
-class MethodCaller(BaseDammy):
+class MethodCaller(BaseGenerator):
     """
     Allows calling methods of values generated by generators
     """
@@ -323,7 +447,7 @@ class MethodCaller(BaseDammy):
         """
         Generate a value and call the specified method on the generated value
 
-        Implementation of the generate_raw() method from BaseDammy. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -333,22 +457,39 @@ class MethodCaller(BaseDammy):
 
         if len(self.args) == 1 and len(self.args[0]) == 0:
             if len(self.kwargs) == 0:
-                return method()
+                return self._generate(method())
             else:
-                return method(**self.kwargs)
+                return self._generate(method(**self.kwargs))
         else:
             if len(self.kwargs) == 0:
-                return method(*self.args)
+                return self._generate(method(*self.args))
             else:
-                return method(*self.args, **self.kwargs)
+                return self._generate(method(*self.args, **self.kwargs))
 
-class DammyGenerator(BaseDammy):
+class OperationResult(BaseGenerator):
     """
     Allows binary operations with regular and Dammy objects
     and it is returned when any of such operations is performed
     """
+    class Operator(Enum):
+        """
+        Enumerated type containing all the available operators
+        """
+        addition = 0
+        substraction = 1
+        multiplication = 2
+        division = 3
+        integer_division = 4
+        modulus = 5
+        lower_than = 6
+        lower_equal = 7
+        equal = 8
+        not_equal = 9
+        greater_than = 10
+        greater_equal = 11
+    
     def __init__(self, a, b, op, sql):
-        super(DammyGenerator, self).__init__(sql)
+        super(OperationResult, self).__init__(sql)
         self.operator = op
         self.d1 = a
         self.d2 = b
@@ -357,18 +498,18 @@ class DammyGenerator(BaseDammy):
         """
         Generates a value and performs the operation.
         It will raise a TypeError if the operator is invalid.
-        
-        Implementation of the generate_raw() method from BaseDammy. 
+
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
         :returns: The value returned after performing the operation
         :raises: TypeError
         """
-        if isinstance(self.d1, DammyGenerator):
+        if isinstance(self.d1, OperationResult):
             d1 = self.d1.generate_raw(dataset)
 
-        elif isinstance(self.d1, BaseDammy):
+        elif isinstance(self.d1, BaseGenerator):
             if self.d1._last_generated is None:
                 d1 = self.d1.generate_raw(dataset)
             else:
@@ -376,10 +517,10 @@ class DammyGenerator(BaseDammy):
         else:
             d1 = self.d1
 
-        if isinstance(self.d2, DammyGenerator):
+        if isinstance(self.d2, OperationResult):
             d2 = self.d2.generate_raw(dataset)
 
-        elif isinstance(self.d2, BaseDammy):
+        elif isinstance(self.d2, BaseGenerator):
             if self.d2._last_generated is None:
                 d2 = self.d2.generate_raw(dataset)
             else:
@@ -387,19 +528,35 @@ class DammyGenerator(BaseDammy):
         else:
             d2 = self.d2
 
-        if self.operator == '+':
+        if self.operator == OperationResult.Operator.addition:
             return self._generate(d1 + d2)
-        elif self.operator == '-':
+        elif self.operator == OperationResult.Operator.substraction:
             return self._generate(d1 - d2)
-        elif self.operator == '*':
+        elif self.operator == OperationResult.Operator.multiplication:
             return self._generate(d1 * d2)
-        elif self.operator == '/':
+        elif self.operator == OperationResult.Operator.division:
             return self._generate(d1 / d2)
+        elif self.operator == OperationResult.Operator.integer_division:
+            return self._generate(d1 // d2)
+        elif self.operator == OperationResult.Operator.modulus:
+            return self._generate(d1 % d2)
+        elif self.operator == OperationResult.Operator.lower_than:
+            return self._generate(d1 < d2)
+        elif self.operator == OperationResult.Operator.lower_equal:
+            return self._generate(d1 <= d2)
+        elif self.operator == OperationResult.Operator.equal:
+            return self._generate(d1 == d2)
+        elif self.operator == OperationResult.Operator.not_equal:
+            return self._generate(d1 != d2)
+        elif self.operator == OperationResult.Operator.greater_than:
+            return self._generate(d1 > d2)
+        elif self.operator == OperationResult.Operator.greater_equal:
+            return self._generate(d1 >= d2)
         else:
             raise TypeError('Unknown operator {}'.format(self.operator))
 
 ############################         Database        ############################
-class AutoIncrement(BaseDammy):
+class AutoIncrement(BaseGenerator):
     """
     Represents an automatically incrementing field. By default starts by 1 and increments by 1
     """
@@ -413,7 +570,7 @@ class AutoIncrement(BaseDammy):
         """
         Generates and updates the next value
 
-        Implementation of the generate_raw() method from BaseDammy. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored.
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -421,70 +578,141 @@ class AutoIncrement(BaseDammy):
         """
         return self._generate(self._last_generated + 1)
 
-class DatabaseConstraint:
+class Unique(BaseGenerator):
     """
-    All database constraints must inherit from this class. This class should never be instantiaded by itself
-    
-    :param prefix: The prefix used to name the constrain when SQL is generated. Currently not in use.
-    :type prefix: str
-    """
-    def __init__(self, prefix):
-        self._prefix = prefix   # Prefix currently not in use
+    Represents a unique field. The generator encapsulated here, will be guaranteed to generate unique values
 
-class PrimaryKey(DatabaseConstraint):
+    :param u: The generator which will generate unique values
+    :param max_retries: The number of times it will retry to generate the value when it has already been generated
+    :type u: BaseGenerator
+    :type max_retries: int
     """
-    Represents a primary key. Every field encapsulated by this class becomes a member of the primary key
+    def __init__(self, max_retries=100, **kwargs):
+        if len(kwargs) == 0:
+            raise Exception('EmptyKeyException')
 
-    :param k: The field which will be part of the primary key
-    :type k: :class:`dammy.db.BaseDammy`
+        self.table = None
+        self.generated = set()
+        self.max_retries = max_retries
+        self.fields = kwargs
+
+    def __len__(self):
+        return len(self.fields)
+
+    def generate_raw(self, dataset=None):
+        """
+        Generates a unique value
+
+        Implementation of the generate_raw() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved.
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A unique value generated by the associated generator
+        :raises: MaximumRetriesExceededException
+        """
+        generated = tuple([x.generate_raw(dataset) for x in self.fields.values()])
+        retries = 0
+        while generated in self.generated and retries < self.max_retries:
+            generated = tuple([x.generate_raw(dataset) for x in self.fields.values()])
+            retries += 1
+        if retries < self.max_retries:
+            self.generated.add(generated)
+            return self._generate(dict(zip(self.fields.keys(), generated)))
+        else:
+            raise MaximumRetriesExceededException(
+                'Maximum retries exceeded for {}. Cannot generate more than {} unique values'.format(
+                    self.fields,
+                    len(self.generated)
+                )
+            )
+
+    def generate(self, dataset=None):
+        """
+        Generates a unique value
+
+        Implementation of the generate() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved.
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A unique value generated by the associated generator
+        :raises: MaximumRetriesExceededException
+        """
+        generated = tuple([x.generate(dataset) for x in self.fields.values()])
+        retries = 0
+        while generated in self.generated and retries < self.max_retries:
+            generated = tuple([x.generate(dataset) for x in self.fields.values()])
+            retries += 1
+        if retries < self.max_retries:
+            self.generated.add(generated)
+            return self._generate(dict(zip(self.fields.keys(), generated)))
+        else:
+            raise MaximumRetriesExceededException(
+                'Maximum retries exceeded for {}. Cannot generate more than {} unique values'.format(
+                    self.fields,
+                    len(self.generated)
+                )
+            )
+
+    def reset(self):
+        """
+        Reset the uniqueness of the generator.
+        """
+        self.generated = set()
+
+class PrimaryKey(Unique):
+    """
+    Represents a primary key. Every field encapsulated by this class becomes a member of the primary key. A
+    table cannot contain more than one primary key. This class is an alias of the Unique class, with the exception
+    that no more than a primary key can exist on each table, but multiple unique values are supported.
+
+    :param k: The fields which will be part of the primary key
+    :type k: :class:`dammy.db.BaseGenerator`
 
     In this example the primary key of A will be the field called 'primary' which is an autoincrement field::
 
-        from dammy import DammyEntity
+        from dammy import EntityGenerator
         from dammy.db import PrimaryKey, AutoIncrement
 
-        class A(DammyEntity):
+        class A(EntityGenerator):
             primary = PrimaryKey(AutoIncrement())
             # More attributes...
-        
+
     In this other example the primary key of B will be formed by the fields called 'field1' and 'field2'::
 
-        from dammy import DammyEntity
+        from dammy import EntityGenerator
         from dammy.db import PrimaryKey, AutoIncrement
 
-        class B(DammyEntity):
+        class B(EntityGenerator):
             field1 = PrimaryKey(AutoIncrement())
             field2 = PrimaryKey(AutoIncrement())
             # More attributes...
     """
-    def __init__(self, k):
-        self.field = k
-        self._sql_equivalent = k._sql_equivalent
+    pass
+        
 
-class ForeignKey(DatabaseConstraint):
+class ForeignKey(BaseGenerator):
     """
     Represents a foreign key. The first parameter is the class where the referenced field is
     and the second a list of strings, each of them containing the name of a field forming
     the primary key. If any of the fields is not a member of the primary key, a IntegrityException is raised
-    
+
     :param ref_table: The table where the referenced field is
     :param \*args: List of the names of the fields forming the referenced key
-    :type ref_table: :class:`dammy.db.DammyEntity`
+    :type ref_table: :class:`dammy.db.EntityGenerator`
     :type \*args: str
     :raises: :class:`dammy.exceptions.IntegrityException`
     """
-    def __init__(self, ref_table, *args):
-        super(ForeignKey, self).__init__('fk')
+    def __init__(self, ref_table, ref_field):
+        super(ForeignKey, self).__init__(None)
 
-        for attr in args:
-            attr_val = getattr(ref_table, attr)
-            if not isinstance(attr_val, PrimaryKey):
-                raise IntegrityException('Expected PrimaryKey, got {}'.format(attr_val.__class__.__name__))
+        attr_obj = getattr(ref_table, ref_field)
 
-        self.ref_table = ref_table
-        self.ref_fields = args
-
-        self.table_name = ref_table.__name__
+        if isinstance(attr_obj, Unique):
+            self.referenced_table = ref_table.__name__
+            self.referenced_field = ref_field
+            self.referenced_object = attr_obj
+        else:
+            raise Exception('Unique or PrimaryKey expected, got {}'.format('')) # TODO
 
     def __len__(self):
         """
@@ -492,7 +720,35 @@ class ForeignKey(DatabaseConstraint):
 
         :returns: The number of fields forming the key
         """
-        return len(self.ref_fields)
+        return len(self.referenced_object)
+
+    def generate_raw(self, dataset=None):
+        """
+        Gets the values corresponding to the key from the given dataset. If the dataset is not specified,
+        a DatasetRequiredException will be raised.
+
+        Implementation of the generate_raw() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved.
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A unique value generated by the associated generator
+        :raises: DatasetRequiredException
+        """
+        if dataset is None:
+            raise DatasetRequiredException(
+                'Reference to a unique field or primary key ({}) given but no dataset containing {}s supplied'.format(
+                    self.referenced_field,
+                    self.referenced_table
+                )
+            )
+        else:
+            if isinstance(dataset, DatasetGenerator):
+                while dataset._counters[self.referenced_table] != 0:
+                    dataset._generate_entity(self.referenced_table)
+
+            chosen = random.choice(dataset[self.referenced_table])
+
+            return self._generate(dict((k, v) for k, v in chosen.items() if k in self.referenced_object.fields.keys()))
 
     def get_reference(self, dataset):
         """
@@ -503,16 +759,11 @@ class ForeignKey(DatabaseConstraint):
         :returns: A tuple containing the values of the fields of the key for a row randomly picked from the dataset
         :raises: :class:`dammy.exceptions.IntegrityException`
         """
-        if self.table_name in dataset.data:
-            values = dataset[self.table_name]
-            rand_row = random.choice(values)
-            ref = tuple(rand_row[v] for v in self.ref_fields)
-            return ref
-        else:
-            raise IntegrityException('Reference to {} not found'.format(self.table_name))
+        warnings.warn('get_reference() is deprecated and it will be removed in the next version. Please use generate() instead', PendingDeprecationWarning)
+        return self.generate(dataset)
 
 ############################    dataset_generator    ############################
-class DatasetGenerator:
+class DatasetGenerator(BaseGenerator):
 
     @staticmethod
     def _infer_type(o):
@@ -555,26 +806,24 @@ class DatasetGenerator:
 
     It can also be used in NoSQL databases.
 
-    :param \**kwargs: Tuples where the first element is the class representing
+    :param \*args: Tuples where the first element is the class representing
      the entity to generate and the second element is the number of entities to generate
-    :type \**kwargs: tuple
+    :type \*args: tuple
     """
-    def __init__(self, *kwargs):
-        self.data = {}
-        self._counters = dict((v[0].__name__, v[1]) for v in kwargs)
-        self._name_class_map = dict((v[0].__name__, v[0]) for v in kwargs)
+    def __init__(self, *args):
+        self._fixed_counters = dict((v[0].__name__, v[1]) for v in args)
+        self._name_class_map = dict((v[0].__name__, v[0]) for v in args)
+        self._args = args
 
-        for c, n in kwargs:
-            if self._counters[c.__name__] != 0:
-                for i in range(0, n):
-                    self._generate_entity(c.__name__)
+        self.data = {}
+        self._counters = None
 
     def _generate_entity(self, c):
         """
         Generates a single entity of the given class
 
         :param c: The class that will generate the entity
-        :type c: :class:`dammy.BaseDammy`
+        :type c: :class:`dammy.BaseGenerator`
         """
         if c in self.data:
             self.data[c].append(self._name_class_map[c]().generate(self))
@@ -583,7 +832,64 @@ class DatasetGenerator:
             self.data[c] = []
             self._generate_entity(c)
 
+    def generate_raw(self, dataset=None):
+        """
+        Generate a new dataset with the previously given specifications
+
+        Implementation of the generate_raw() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A dict where every key value pair is an attribute and its value
+        :raises: :class:`dammy.exceptions.DatasetRequiredException`
+        """
+        self._counters = self._fixed_counters.copy()
+        self.data = {}
+
+        for c, n in self._args:
+            if self._counters[c.__name__] != 0:
+                for i in range(0, n):
+                    self._generate_entity(c.__name__)
+
+        return self._generate(self)
+
+    def to_json(self, save_to=None, indent=4):
+        """
+        Get the JSON representation of the dataset. If a path is specified, a file is created and the resulting JSON is written
+        to the file. If no path is given, the generated JSON will be returned.
+
+        :param save_to: The path where the JSON will be saved
+        :param indent: The indentation level of the resulting JSON
+        :type save_to: str
+        :type indent: int
+        :returns: String containing the JSON encoded dataset or none if it has been written to a file
+        """
+        if save_to is None:
+            return json.dumps(self.data, indent=indent)
+        else:
+            with open(save_to, 'w') as f:
+                json.dump(self.data, f, indent=indent)
+                f.close()
+            return None
+
     def get_sql(self, save_to=None, create_tables=True):
+        """
+        Gets the dataset as SQL INSERT statements. The generated SQL is always returned and if save_to is specified,
+        it is saved to that location. Additional CREATE TABLE statements are added if create_tables is set to True
+
+        :param save_to: The path where the resulting SQL will be saved.
+        :param create_tables: If set to true, it will generate the instructions to create the tables.
+        :type save_to: str
+        :type create_tables: bool
+        :returns: A string with the SQL sentences required to insert all the tuples
+        
+        .. warning::
+            This method is deprecated and it will be removed in the next release. Please use to_sql() instead.
+        """
+        warnings.warn('get_sql() is deprecated and it will be removed in the next release. Please use to_sql() instead', PendingDeprecationWarning)
+        return self.to_sql(save_to=save_to, create_tables=create_tables)
+
+    def to_sql(self, save_to=None, create_tables=True):
         """
         Gets the dataset as SQL INSERT statements. The generated SQL is always returned and if save_to is specified,
         it is saved to that location. Additional CREATE TABLE statements are added if create_tables is set to True
@@ -607,44 +913,60 @@ class DatasetGenerator:
 
             instances[name] = c()
 
-            if len(instances[name].primary_key) > 0:
-                tables[name]['constraints'].append(
-                    'CONSTRAINT pk_{} PRIMARY KEY ({})'.format(
-                        name,
-                        ', '.join(instances[name].primary_key)
-                        )
-                    )
-
             for col in instances[name].attrs:
                 col_obj = getattr(instances[name], col)
 
                 if isinstance(col_obj, ForeignKey):
-                    fk_fields = []
+                    fields = col_obj.referenced_object.fields
 
-                    for field in col_obj.ref_fields:
-                        ref_field = getattr(col_obj.ref_table, field)
-                        fk_fields.append('{}_{}'.format(col, field))
-                        tables[name]['column_types'].append(ref_field._sql_equivalent)
+                    fk_fields = [col + '_' + name for name in fields.keys()]
+                    fk_field_types = [x._sql_equivalent for x in fields.values()]
 
+                    # Add the columns
                     tables[name]['columns'].extend(fk_fields)
+                    tables[name]['column_types'].extend(fk_field_types)
 
+                    # Add the constraint
                     tables[name]['constraints'].append(
-                        'CONSTRAINT fk_{} ({}) REFERENCES {}({})'.format(
+                        'CONSTRAINT {} FOREIGN KEY ({}) REFERENCES {}({})'.format(
                             col,
                             ', '.join(fk_fields),
-                            col_obj.table_name,
-                            ', '.join(col_obj.ref_fields)
+                            col_obj.referenced_table,
+                            ', '.join(fields.keys())
                         )
                     )
 
-                    if col_obj.table_name not in table_order:
-                        table_order.append(col_obj.table_name)
+                    # Add the table
+                    if col_obj.referenced_table not in table_order:
+                        table_order.append(col_obj.referenced_table)
 
                 elif isinstance(col_obj, PrimaryKey):
-                    tables[name]['columns'].append(col)
-                    tables[name]['column_types'].append(col_obj.field._sql_equivalent)
+                    # Add the columns
+                    tables[name]['columns'].extend(col_obj.fields.keys())
+                    tables[name]['column_types'].extend([x._sql_equivalent for x in col_obj.fields.values()])
 
-                elif isinstance(col_obj, BaseDammy):
+                    # add the constraint
+                    tables[name]['constraints'].append(
+                        'CONSTRAINT {} PRIMARY KEY ({})'.format(
+                            col,
+                            ', '.join(col_obj.fields.keys())
+                        )
+                    )
+
+                elif isinstance(col_obj, Unique):
+                    # Add the columns
+                    tables[name]['columns'].extend(col_obj.fields.keys())
+                    tables[name]['column_types'].extend([x._sql_equivalent for x in col_obj.fields.values()])
+
+                    # add the constraint
+                    tables[name]['constraints'].append(
+                        'CONSTRAINT {} UNIQUE ({})'.format(
+                            col,
+                            ', '.join(col_obj.fields.keys())
+                        )
+                    )
+
+                elif isinstance(col_obj, BaseGenerator):
                     tables[name]['columns'].append(col)
                     tables[name]['column_types'].append(col_obj._sql_equivalent)
 
