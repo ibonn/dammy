@@ -30,7 +30,7 @@ setup_args = dict(
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Database',
         'Topic :: Software Development :: Testing',
-        'Topic :: Software Development :: Testing :: Mocking'
+        'Topic :: Software Development :: Testing :: Mocking',
         'Topic :: Utilities'
     ],
     include_package_data=True
