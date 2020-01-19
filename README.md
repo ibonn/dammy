@@ -91,7 +91,7 @@ To install the latest stable release of dammy using pip
 pip install dammy
 ```
 
-You can also install the latest development release by cloning the and installing it with pip
+You can also install the latest development release by cloning the repository and installing it with pip
 ```
 git clone https://github.com/ibonn/dammy.git dammy
 cd dammy
