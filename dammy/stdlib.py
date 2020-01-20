@@ -106,7 +106,7 @@ class RandomString(BaseGenerator):
     """
     Generates a random string with the given length and symbols.
     The default symbols are all the letters in the english alphabet (both uppercase and lowercase) and numbers 0 through 9
-    
+
     :param length: The length of the string
     :param symbols: The simbols available to generate the string
     :type length: int
@@ -232,7 +232,7 @@ class CarBrand(BaseGenerator):
         """
         Generates a new car brand
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict

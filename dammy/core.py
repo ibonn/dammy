@@ -10,7 +10,7 @@ import random
 import warnings
 from enum import Enum
 
-from .exceptions import DatasetRequiredException, IntegrityException, MaximumRetriesExceededException, InvalidReferenceException
+from .exceptions import DatasetRequiredException, MaximumRetriesExceededException, InvalidReferenceException
 
 ############################         CORE            ############################
 class BaseGenerator:
@@ -712,13 +712,13 @@ class ForeignKey(BaseGenerator):
     """
     Represents a foreign key. The first parameter is the class where the referenced field is
     and the second a list of strings, each of them containing the name of a field forming
-    the primary key. If any of the fields is not a member of the primary key, a IntegrityException is raised
+    the primary key. If the referenced attribut is not unique or primay key, a InvalidReferenceException is raised
 
     :param ref_table: The table where the referenced field is
     :param \*args: List of the names of the fields forming the referenced key
     :type ref_table: :class:`dammy.db.EntityGenerator`
     :type \*args: str
-    :raises: :class:`dammy.exceptions.IntegrityException`
+    :raises: :class:`dammy.exceptions.InvalidReferenceException`
     """
     def __init__(self, ref_table, ref_field):
         super(ForeignKey, self).__init__(None)
@@ -778,7 +778,7 @@ class ForeignKey(BaseGenerator):
         :param dataset: The dataset from which all referenced fields will be retrieved
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
         :returns: A tuple containing the values of the fields of the key for a row randomly picked from the dataset
-        :raises: :class:`dammy.exceptions.IntegrityException`
+        :raises: :class:`dammy.exceptions.InvalidReferenceException`
         """
         warnings.warn('get_reference() is deprecated and it will be removed in the next version. Please use generate() instead', PendingDeprecationWarning)
         return self.generate(dataset)
