@@ -103,7 +103,7 @@ pip install -e .
     * Semantic versioning used from now on
     * Documentation fixed
     * Minor code changes (duplicated code removed...)
-    
+
 * 0.1.3
     * Code refactored
     * All binary operations made possible between BaseGenerator objects

@@ -6,8 +6,8 @@ You can access the basic classes by just importing dammy::
 
     import dammy
 
-But if you want to add more functionality, there are more modules available. 
-Check the documentation page for each module to see the available classes and
+But if you want to add more functionality, there are more modules available.
+ Check the documentation page for each module to see the available classes and
 functions.
 
 .. currentmodule:: dammy

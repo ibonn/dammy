@@ -33,7 +33,7 @@ class RandomInteger(BaseGenerator):
         """
         Generates a new random integer
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -64,7 +64,7 @@ class RandomName(BaseGenerator):
         """
         Generates a new random name
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -93,7 +93,7 @@ class CountryName(BaseGenerator):
     def generate_raw(self, dataset=None):
         """
         Generates a new country name
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -122,7 +122,7 @@ class RandomString(BaseGenerator):
         """
         Generates a new random string
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -163,7 +163,7 @@ class RandomDateTime(BaseGenerator):
         """
         Generates a new random datetime
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -204,7 +204,7 @@ class BloodType(BaseGenerator):
         """
         Generates a random blood type
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict

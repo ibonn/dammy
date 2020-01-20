@@ -11,8 +11,8 @@ the owner of at least one car.
 
 What is a generator?
 ====================
-In dammy, a generator is a class which generates random data. Plain and simple. 
-All generators must inherit :class:`dammy.BaseGenerator`. Generators can be simple or
+In dammy, a generator is a class which generates random data. Plain and simple.
+ All generators must inherit :class:`dammy.BaseGenerator`. Generators can be simple or
 composite. A simple generator generates a value, while a composite generator is composed
 of multiple simple generators and generates a value for each of them.
 
@@ -99,7 +99,7 @@ We also want the car model name to be uppercase. How do we make the birthdate da
 And how can we alter the generated values if we cant access them until they are generated?
 
 It is quite easy if you already know how to do all of this in python. You want to convert a string to uppercase, just call the .upper() method on the string.
-Want to get someones age? Get the current date and the birthdate and substract them. 
+Want to get someones age? Get the current date and the birthdate and substract them.
 
 With dammy it's just the same. If you are generating a string, you can call any methods, access any attributes and use all the operators of the string class.
 This principle extends to every dammy entity, no matter the type of the generated value.
@@ -191,8 +191,6 @@ Notice once again that new imports have been added
 
     In fact, it is not recommended to generate entities this way when they contain references.
     The safest way is using a :class:`dammy.db.DatasetGenerator`.
-
-    
 
 To generate a car, now we need a dataset containing persons. The dataset can be a dictionary or a :class:`dammy.db.DatasetGenerator`
 But now cars contain references to people, so the best way to generate them is generating a dataset containing cars and people. This

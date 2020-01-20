@@ -1,0 +1,16 @@
+Código duplicado
+    Unique.generate() y Unique.generate_raw()
+    core.py:964 y core.py:977
+    stdlib.py:150 y stdlib.py:155
+    core.py:293 y core.py:299
+
+Demasiado complejo
+    core.py (Muy largo)
+    DatasetGenerator.to_sql()
+    OperationResult.generate_raw()              # WONTFIX
+    EntityGenerator.generate_raw()
+    MethodCaller.generate_raw()
+    OperationResult() (Demasiados argumentos)   # WONTFIX
+    ForeignKey.generate_raw()
+    OperationResult._get_operand_value()        # WONTFIX
+    DatasetGenerator.generate_raw()             # WONTFIX
