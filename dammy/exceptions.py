@@ -47,7 +47,7 @@ class IntegrityException(DammyException):
         class B(EntityGenerator):
             attribute1 = RandomInteger(15, 546)
             reference_to_A = ForeignKey(A, 'attribute1')
-    
+
     This example will raise a IntegrityException because reference_to_A in class B is a foreign key
     referencing the field attribute1 from class A, and A.attribute1 is not a primary key
     """
@@ -72,5 +72,14 @@ class MaximumRetriesExceededException(DammyException):
 
     The code will result in an exception because it will try to generate 50 unique integers in the [1, 10]
     interval, which is obviously impossible because there are 10 unique integers available
+    """
+    pass
+
+class InvalidReferenceException(DammyException):
+    """
+    Raised when a foreign key references a field which is not a primary key or unique
+
+    This is commonly raised when the amount of generated data is bigger than the available data
+    on a generator obtaining its data from a file.
     """
     pass

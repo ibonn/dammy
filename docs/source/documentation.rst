@@ -21,27 +21,32 @@ functions.
 
 The main module
 ===================
+The classes in the main module are listed below.
 
 .. currentmodule:: dammy
-The classes in the main module are listed below.
 
 .. autoclass:: BaseGenerator
     :members:
 
 .. autoclass:: EntityGenerator
     :members:
+    :inherited-members:
 
 .. autoclass:: FunctionResult
     :members:
+    :inherited-members:
 
 .. autoclass:: AttributeGetter
     :members:
+    :inherited-members:
 
 .. autoclass:: MethodCaller
     :members:
+    :inherited-members:
 
 .. autoclass:: OperationResult
     :members:
+    :inherited-members:
 
 More modules
 ===================

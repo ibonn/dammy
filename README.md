@@ -61,7 +61,7 @@ from dammy.stdlib import RandomName, RandomString, RandomDateTime, RandomInteger
 
 # Define what a person looks like
 class Person(EntityGenerator):
-    identifier = PrimaryKey(AutoIncrement())
+    id_pk = PrimaryKey(id=AutoIncrement())
     first_name = RandomName().upper()
     password = RandomString(5)
     birthday = RandomDateTime(start=datetime(1980, 1, 1), end=datetime(2000, 12, 31), date_format='%d/%m/%Y')
@@ -71,8 +71,8 @@ class Person(EntityGenerator):
 
 # Define what a car looks like
 class Car(EntityGenerator):
-    identifier = PrimaryKey(AutoIncrement())
-    manufacturer_name = CarBrand())
+    id_pk = PrimaryKey(id=AutoIncrement())
+    manufacturer_name = CarBrand()
     model = CarModel(car_brand=manufacturer_name)
     owner = ForeignKey(Person, 'identifier')
 ```
@@ -82,7 +82,7 @@ And the data can be exported to SQL
 from dammy import DatasetGenerator
 
 # Generate a dataset with 20000 cars and 94234 people
-dataset = DatasetGenerator((Car, 20000), (Person, 94234))
+dataset = DatasetGenerator((Car, 20000), (Person, 94234)).generate()
 dataset.get_sql(save_to='cars_with_owners.sql')
 ```
 ## Installation
@@ -99,6 +99,11 @@ pip install -e .
 ```
 
 ## Release history
+* 1.0.0
+    * Semantic versioning used from now on
+    * Documentation fixed
+    * Minor code changes (duplicated code removed...)
+    
 * 0.1.3
     * Code refactored
     * All binary operations made possible between BaseGenerator objects

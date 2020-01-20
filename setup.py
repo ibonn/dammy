@@ -5,7 +5,7 @@ with open('README.md') as readme_file:
 
 setup_args = dict(
     name='dammy',
-    version='0.1.3',
+    version='1.0.0',
     description='Generate fake data for any purpose',
     long_description_content_type="text/markdown",
     long_description=README,

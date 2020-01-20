@@ -10,18 +10,20 @@ The classes in the module are listed below.
 
 .. autoclass:: AutoIncrement
     :members:
-
-.. autoclass:: DatabaseConstraint
-    :members:
+    :inherited-members:
 
 .. autoclass:: PrimaryKey
     :members:
+    :inherited-members:
 
 .. autoclass:: ForeignKey
     :members:
+    :inherited-members:
 
 .. autoclass:: Unique
     :members:
+    :inherited-members:
 
 .. autoclass:: DatasetGenerator
     :members:
+    :inherited-members:

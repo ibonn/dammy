@@ -9,7 +9,7 @@ import datetime
 import pkg_resources
 
 from .db import ForeignKey
-from .core import BaseGenerator, OperationResult
+from .core import BaseGenerator
 
 class RandomInteger(BaseGenerator):
     """
@@ -180,7 +180,7 @@ class RandomDateTime(BaseGenerator):
         """
         Generates a random datetime and formats it if a format string has been given
 
-        Implementation of the generate() method from BaseGenerator. 
+        Implementation of the generate() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -262,7 +262,7 @@ class CarModel(BaseGenerator):
         """
         Generates a new car model
 
-        Implementation of the generate_raw() method from BaseGenerator. 
+        Implementation of the generate_raw() method from BaseGenerator.
 
         :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
@@ -280,5 +280,5 @@ class CarModel(BaseGenerator):
 
         elif isinstance(car_brand, ForeignKey):
             car_brand = list(car_brand._last_generated.values())[0]
-        
+
         return self._generate(random.choice(CarModel._models[car_brand]))
