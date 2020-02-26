@@ -10,6 +10,7 @@ import random
 import warnings
 from enum import Enum
 
+from .iterator import Iterator
 from .exceptions import DatasetRequiredException, MaximumRetriesExceededException, InvalidReferenceException
 
 ############################         CORE            ############################
@@ -20,6 +21,28 @@ class BaseGenerator:
     def __init__(self, sql_equivalent):
         self._last_generated = None
         self._sql_equivalent = sql_equivalent
+
+    def iterator(self, dataset=None):
+        """
+        Get a iterator which generates values and performs a posterior treatment on them. 
+        By default, no treatment is done and generate_raw() is called.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A Python iterator
+        """
+        return Iterator(self.__class__, dataset, raw=False)
+
+    def iterator_raw(self, dataset=None):
+        """
+        Get a generator which generates values without posterior treatment. 
+
+        :param dataset: The dataset from which all referenced fields will be retrieved
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: Python generator
+        :raises: NotImplementedError
+        """
+        return Iterator(self.__class__, dataset, raw=True)
 
     def generate_raw(self, dataset=None):
         """
@@ -507,7 +530,7 @@ class OperationResult(BaseGenerator):
         :returns: The value returned after performing the operation
         :raises: DatasetRequiredException
         """
-        if isinstance(op, OperationResult):
+        if isinstance(op, OperationResult) or isinstance(op, AttributeGetter) or isinstance(op, FunctionResult) or isinstance(op, MethodCaller):
             return op.generate_raw(dataset)
 
         elif isinstance(op, BaseGenerator):
