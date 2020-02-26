@@ -22,7 +22,7 @@ Generate fake/dummy data for any purpose
 ## Introduction
 
 dammy is a powerful and simple tool to generate fake data. You can use it to mock classes, populate databases and and much more.
-You can check the full documentation [here](https://readthedocs.org/projects/dammy/).
+You can check the full documentation [here](https://dammy.readthedocs.io/en/latest/).
 
 ## Features
 * Generate anything within the set of prebuilt objects (Person names, country names, car manufacturers and models, random dates...)
@@ -51,6 +51,21 @@ class Person(EntityGenerator):
 # Generate 1000 random people
 for i in range(0, 1000):
     print(Person())
+```
+
+Which will output:
+```
+{'identifier': 1, 'uid': '9XCha', 'first_name': 'ZAYN', 'blood': 'A+', 'birthday': '24/01/1982', 'favorite_number': 5, 'age': 38, 'country': 'Denmark'}
+{'identifier': 2, 'uid': 'bbYbw', 'first_name': 'MALIHA', 'blood': 'AB+', 'birthday': '01/12/1981', 'favorite_number': 1, 'age': 38, 'country': 'Syrian Arab Republic'}
+{'identifier': 3, 'uid': 'aGF49', 'first_name': 'ANGEL', 'blood': 'AB+', 'birthday': '18/08/1992', 'favorite_number': 1, 'age': 27, 'country': 'Macedonia, the Former Yugoslav Republic of'}
+{'identifier': 4, 'uid': 'Lcr0J', 'first_name': 'REUBEN', 'blood': '0-', 'birthday': '07/11/1997', 'favorite_number': 4, 'age': 22, 'country': 'Dominican Republic'}
+{'identifier': 5, 'uid': 'P7mD4', 'first_name': 'MAMADOU', 'blood': 'A+', 'birthday': '02/01/1987', 'favorite_number': 7, 'age': 33, 'country': 'Palau'}
+{'identifier': 6, 'uid': 'ykdeL', 'first_name': 'BATSHEVA', 'blood': 'A+', 'birthday': '11/01/1983', 'favorite_number': 5, 'age': 37, 'country': 'Seychelles'}
+{'identifier': 7, 'uid': 'h9HjQ', 'first_name': 'JIMENA', 'blood': 'A-', 'birthday': '23/10/1985', 'favorite_number': 0, 'age': 34, 'country': 'China'}
+{'identifier': 8, 'uid': 'rjt92', 'first_name': 'YERIK', 'blood': 'AB+', 'birthday': '29/10/1991', 'favorite_number': 5, 'age': 28, 'country': 'Libya'}
+{'identifier': 9, 'uid': 'vL0DE', 'first_name': 'YISRAEL', 'blood': 'AB+', 'birthday': '25/03/1989', 'favorite_number': 8, 'age': 30, 'country': 'Spain'}
+{'identifier': 10, 'uid': 'CsrhX', 'first_name': 'JOSHUA', 'blood': 'AB+', 'birthday': '20/09/1999', 'favorite_number': 1, 'age': 20, 'country': 'Svalbard and Jan Mayen'}
+...
 ```
 
 It also supports relationships between tables, so you can generate data to populate databases
@@ -99,6 +114,8 @@ pip install -e .
 ```
 
 ## Release history
+* 1.1.0
+    * Iterators added
 * 1.0.0
     * Semantic versioning used from now on
     * Documentation fixed
