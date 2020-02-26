@@ -33,6 +33,10 @@ class Car(EntityGenerator):
     model = CarModel(car_brand=brand)
     owner = ForeignKey(Person, 'id_pk')
 
+# Iterator example. Generates all instances of Person
+for i in Person().iterator():
+    print(i)
+
 # Generate 10 random people
 for i in range(0, 10):
     print(Person())
