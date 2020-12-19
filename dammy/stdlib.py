@@ -29,7 +29,7 @@ class RandomInteger(BaseGenerator):
         self._lb = lb
         self._ub = ub
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new random integer
 
@@ -60,7 +60,7 @@ class RandomName(BaseGenerator):
             with pkg_resources.resource_stream('dammy', 'data/names.json') as f:
                 RandomName._names = json.load(f)
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new random name
 
@@ -73,7 +73,13 @@ class RandomName(BaseGenerator):
         gender = self._gender
         if gender is None:
             gender = random.choice(['male', 'female'])
-        return self._generate(random.choice(RandomName._names[gender]))
+        
+        if localization is None or localization.lower() == 'default':
+            localization = random.choice(list(RandomName._names.keys()))
+        elif localization not in RandomName._names.keys():
+            localization = 'default'
+        
+        return self._generate(random.choice(RandomName._names[localization][gender]))
 
 class CountryName(BaseGenerator):
     """
@@ -90,7 +96,7 @@ class CountryName(BaseGenerator):
                 CountryName._countries = json.load(f)
 
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new country name
         Implementation of the generate_raw() method from BaseGenerator.
@@ -99,8 +105,12 @@ class CountryName(BaseGenerator):
         :type dataset: :class:`dammy.db.DatasetGenerator` or dict
         :returns: A country name, chosen at random
         """
-        c = random.choice(list(CountryName._countries.keys()))
-        return self._generate(CountryName._countries[c])
+        if localization is None or localization.lower() == 'default':
+            localization = 'en'
+
+        c = random.choice(list(CountryName._countries[localization].keys()))
+
+        return self._generate(CountryName._countries[localization][c])
 
 class RandomString(BaseGenerator):
     """
@@ -118,7 +128,7 @@ class RandomString(BaseGenerator):
         self._length = length
         self._symbols = list(symbols)
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new random string
 
@@ -159,7 +169,7 @@ class RandomDateTime(BaseGenerator):
 
         self._format = date_format
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new random datetime
 
@@ -175,7 +185,7 @@ class RandomDateTime(BaseGenerator):
 
         return self._generate(datetime.datetime.fromtimestamp(t))
 
-    def generate(self, dataset=None):
+    def generate(self, dataset=None, localization=None):
 
         """
         Generates a random datetime and formats it if a format string has been given
@@ -188,9 +198,9 @@ class RandomDateTime(BaseGenerator):
         """
         d = self.generate_raw(dataset)
         if self._format is None:
-            return d
+            return self._generate(d)
         else:
-            return d.strftime(self._format)
+            return self._generate(d.strftime(self._format))
 
 class BloodType(BaseGenerator):
     """
@@ -200,7 +210,7 @@ class BloodType(BaseGenerator):
     def __init__(self):
         super(BloodType, self).__init__('VARCHAR(3)')
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a random blood type
 
@@ -214,7 +224,7 @@ class BloodType(BaseGenerator):
         letters = ['A', 'B', '0', 'AB']
         symbols = ['+', '-']
 
-        return random.choice(letters) + random.choice(symbols)
+        return self._generate(random.choice(letters) + random.choice(symbols))
 
 class CarBrand(BaseGenerator):
     """
@@ -228,7 +238,7 @@ class CarBrand(BaseGenerator):
             with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarBrand._brands = list(json.load(f).keys())
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new car brand
 
@@ -258,7 +268,7 @@ class CarModel(BaseGenerator):
             with pkg_resources.resource_stream('dammy', 'data/car_models.json') as f:
                 CarModel._models = json.load(f)
 
-    def generate_raw(self, dataset=None):
+    def generate_raw(self, dataset=None, localization=None):
         """
         Generates a new car model
 
@@ -282,3 +292,96 @@ class CarModel(BaseGenerator):
             car_brand = list(car_brand._last_generated.values())[0]
 
         return self._generate(random.choice(CarModel._models[car_brand]))
+
+class IPV4Address(BaseGenerator):
+    """
+    Generates a random IPv4 address
+    """
+
+    def __init__(self):
+        super(BloodType, self).__init__('VARCHAR(15)')
+
+    def generate_raw(self, dataset=None, localization=None):
+        """
+        Generates a random IPv4 address
+
+        Implementation of the generate_raw() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A randomly generated blood type
+        """
+
+        ip_address = IPV4Address.__generate_ip()
+
+        # TODO check invalid ip addresses
+        invalid_addr = [
+            '0.0.0.0',
+        ]
+
+        while ip_address in invalid_addr:
+            ip_address = IPV4Address.__generate_ip()
+
+        return ip_address
+
+    @staticmethod
+    def __generate_ip():
+        return '.'.join([str(random.randint(0, 254)) for i in range(4)])
+
+class CreditCard(BaseGenerator):
+    """
+    Generates a random credit card number
+    """
+
+    def __init__(self):
+        super(BloodType, self).__init__('VARCHAR(15)')
+
+    def generate_raw(self, dataset=None, localization=None):
+        """
+        Generates a random credit card number
+
+        Implementation of the generate_raw() method from BaseGenerator.
+
+        :param dataset: The dataset from which all referenced fields will be retrieved. It will be ignored
+        :type dataset: :class:`dammy.db.DatasetGenerator` or dict
+        :returns: A randomly generated blood type
+        """
+
+        num = CreditCard.__generate_number()
+
+        # TODO check wether the number is valid or not (Luhn algorithm)
+        while not CreditCard.__validate(num):
+            num = CreditCard.__generate_number()
+
+        return num
+
+    @staticmethod
+    def __generate_number():
+        """
+        Generate a 16 digit credit card number candidate, formatted with spaces every 4 digits
+
+        :returns: A synthetic credit card number
+        """
+        return ' '.join(['{:04d}'.format(random.randint(0, 9999)) for i in range(4)])
+
+    @staticmethod
+    def __validate(number):
+        """
+        Uses Luhn algorithm to check wether a number is a valid credit card number or not
+
+        :param number: The number to validate
+        :returns: True on success, false otherwise
+        """
+        digits = [int(d) for d in number.replace(' ', '')]
+        even_pos = digits[1::2]
+        odd_pos  = digits[::2]
+
+        double_digits = [2 * d for d in even_pos]
+
+        s = sum(odd_pos)
+        for x in double_digits:
+            m = x % 10
+            d = (x - m) // 10
+            s += m + d
+        
+        return s % 10 == 0

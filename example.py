@@ -11,6 +11,7 @@ random.seed(1234)
 
 # Define what a person looks like
 class Person(EntityGenerator):
+    DAMMY_LOCALIZATION = 'es'
     id_pk = PrimaryKey(identifier=AutoIncrement())
     uid_uq = Unique(uid=RandomString(5))
     first_name = RandomName().upper()

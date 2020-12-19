@@ -4,7 +4,7 @@ class Iterator:
     """
     Iterators provide a way to generate all instances given a class by iterating over them.
     """
-    def __init__(self, c, dataset, raw=False):
+    def __init__(self, c, dataset, raw=False, localization=None):
         """
         Create a new iterator.
 
@@ -20,6 +20,7 @@ class Iterator:
         self.dataset = dataset
         self.raw = raw
         self.num_generated_instances = 0
+        self.localization = localization
 
     def __iter__(self):
         # This method has been implemented to make the object iterable
@@ -32,9 +33,9 @@ class Iterator:
         """
         try:
             if self.raw:
-                instance = self.generator.generate_raw(self.dataset)
+                instance = self.generator.generate_raw(self.dataset, self.localization)
             else:
-                instance = self.generator.generate(self.dataset)
+                instance = self.generator.generate(self.dataset, self.localization)
 
         except MaximumRetriesExceededException:
             raise StopIteration
