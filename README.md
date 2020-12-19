@@ -116,6 +116,7 @@ pip install -e .
 ## Release history
 * 1.1.0
     * Iterators added
+    * ForeignKey.get_reference() deprecated. Will be removed the next version
 * 1.0.0
     * Semantic versioning used from now on
     * Documentation fixed
