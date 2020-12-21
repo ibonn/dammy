@@ -83,3 +83,9 @@ class InvalidReferenceException(DammyException):
     on a generator obtaining its data from a file.
     """
     pass
+
+class EmptyKeyException(DammyException):
+    """
+    Raised when a primary key or a unique filed is empty
+    """
+    pass
