@@ -6,10 +6,6 @@ python:
 install:
     - 'pip install -e .'
 
-# Test
+# Perform tests
 script:
-    - 'python -c "from dammy import *"'
-    - 'python -c "from dammy.db import *"'
-    - 'python -c "from dammy.stdlib import *"'
-    - 'python -c "from dammy.exceptions import *"'
-    - 'python -c "from dammy.functions import *"'
+    - 'python -m pytest'
