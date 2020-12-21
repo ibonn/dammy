@@ -3,7 +3,7 @@
 Contributing
 **************************
 The ways to contribute to the project are
-- If you know Python, you can fork the `GitHub repository <https://github.com/ibonn/dammy>`_ make your changes
+- You can fork the `GitHub repository <https://github.com/ibonn/dammy>`_ make your changes
 and perform a pull request.
 
 - The same applies to documentation translations or improvements if you have knowledge of ReStructuredText and Sphinx.
