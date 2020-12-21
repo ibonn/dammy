@@ -114,6 +114,13 @@ pip install -e .
 ```
 
 ## Release history
+* 1.2.0-alpha
+    * dammy.seed() added to seed the random number generator
+    * RandomFloat, CreditCard and IPv4Address added to stdlib
+    * Localization support enabled
+    * Deprecated ForeignKey.get_reference() removed
+    * Deprecated DatasetGenerator.get_sql() removed
+    * Minor bugs fixed
 * 1.1.0
     * Iterators added
     * ForeignKey.get_reference() deprecated. Will be removed the next version
